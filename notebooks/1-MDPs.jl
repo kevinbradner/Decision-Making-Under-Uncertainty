@@ -198,6 +198,10 @@ The possible actions $s$ are movements in the cardinal directions, using Julia's
 # create policy grid showing the best action in each state
 function policy_grid(policy::Policy, xmax::Int, ymax::Int)
     arrows = Dict(UP => "↑",
+				  UL => "↖",
+		          UR => "↗",
+		          DL => "↙",
+		          DR => "↘",
                   DOWN => "↓",
                   LEFT => "←",
                   RIGHT => "→")
@@ -210,6 +214,9 @@ function policy_grid(policy::Policy, xmax::Int, ymax::Int)
 
     return grid
 end
+
+# ╔═╡ b5fda55a-9c37-44dc-ba67-c7eb66fa11a6
+
 
 # ╔═╡ d66edb3a-7ccc-4e75-8d42-8d5b1ff5afbb
 md"""
@@ -3390,7 +3397,7 @@ version = "1.4.1+1"
 # ╠═e1850dbb-30ea-4e1e-94f7-10582f89fb5d
 # ╠═43a7c406-3d59-4b80-8d34-7b6119e9c936
 # ╟─25d170e9-1c26-4058-96fc-04ab47964b51
-# ╟─52b96024-9f52-4f07-926b-2297ed7dd166
+# ╠═52b96024-9f52-4f07-926b-2297ed7dd166
 # ╟─d9755f26-3f30-48ba-91d7-266c0204237d
 # ╟─e2a84ebf-a259-43c1-b512-f6c6b6e02d14
 # ╠═c092511d-c2e7-4b8c-8104-b4b10893cb02
@@ -3405,6 +3412,7 @@ version = "1.4.1+1"
 # ╠═c1d07fca-1fbd-4450-96b1-c829d7ad8306
 # ╟─dcfc1975-04e8-4d8e-ab46-d1e0846c071e
 # ╠═bcc5e8a3-1e3a-40cf-a306-13599a4952ac
+# ╠═b5fda55a-9c37-44dc-ba67-c7eb66fa11a6
 # ╟─d66edb3a-7ccc-4e75-8d42-8d5b1ff5afbb
 # ╠═bc541507-61db-4084-9712-1c57d139e17f
 # ╟─b2856919-5529-431b-8025-0b7f3f3081b0
@@ -3434,7 +3442,7 @@ version = "1.4.1+1"
 # ╟─32668e09-b12b-43c8-862f-b6f1a77557ec
 # ╟─90b507bd-8cab-4c30-816e-a4b264e903a6
 # ╟─7ee1a2f0-0210-4e89-98e5-73f18fb178b1
-# ╟─73182581-fdf4-4252-b64e-34f39e1f96da
+# ╠═73182581-fdf4-4252-b64e-34f39e1f96da
 # ╟─c5fbf696-3e5c-4b59-be4d-9a43f30d6211
 # ╟─786b27eb-129f-4538-beca-7e8b69fd40e4
 # ╠═9cb6e19b-25f4-44b5-8155-d55ad3ba617c
