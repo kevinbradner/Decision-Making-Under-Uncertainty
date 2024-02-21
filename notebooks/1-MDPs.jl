@@ -291,8 +291,9 @@ function T(s::State, a::Action)
 	probabilities = zeros(Nₐ + 1)
 	p_transition = params.p_transition
 
-	for (i, a′) in enumerate(𝒜)
-		prob = (a′ == a) ? p_transition : (1 - p_transition) / (Nₐ - 1)
+	for (i, a′) in enumerate(𝒜) 
+		neighbors = (a' == UP) ? [UL, UR] : (a == UR) ? [UP, RIGHT] : [A[i-1], A[i+1]]
+		prob = (a′ == a) ? p_transition : (a' in neighbors) ? (1 - p_transition) / length(neighbors) : 0
 		destination = s + MOVEMENTS[a′]
 		next_states[i+1] = destination
 
