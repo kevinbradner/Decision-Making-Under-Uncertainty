@@ -173,9 +173,60 @@ Base.:(==)(s1::State, s2::State) = (s1.x == s2.x) && (s1.y == s2.y)
 
 # ╔═╡ c092511d-c2e7-4b8c-8104-b4b10893cb02
 @with_kw struct GridWorldParameters
-	size::Tuple{Int,Int} = (10, 10)   # size of the grid
+	size::Tuple{Int,Int} = (7, 7)   # size of the grid
 	null_state::State = State(-1, -1) # terminal state outside of the grid
 	p_transition::Real = 0.7 # probability of transitioning to the correct next state
+	wind_dict::Dict{Tuple{Int, Int}, Tuple{Int, Float64}} = Dict(
+		(1,7) => (5,0),      
+		(2,7) => (5,7*pi/4),
+		(3,7) => (10,5*pi/3),
+		(4,7) => (10,3*pi/2),
+		(5,7) => (15,3*pi/2),
+		(6,7) => (15,4*pi/3),
+		(7,7) => (15,4*pi/3),
+		(1,6) => (5,0),
+		(2,6) => (10,pi/4),
+		(3,6) => (10,0),     
+		(4,6) => (10,0),
+		(5,6) => (15,0),
+        (6,6) => (15,7*pi/4),
+		(7,6) => (15,4*pi/3),
+		(1,5) => (5,0),
+        (2,5) => (5,pi/2),   
+		(3,5) => (10,pi/4),
+		(4,5) => (10,0),
+        (5,5) => (15,7*pi/4),
+		(6,5) => (15,3*pi/2),
+		(7,5) => (15,4*pi/3),
+        (1,4) => (5,0),      
+		(2,4) => (5,pi/2),
+		(3,4) => (10,pi/2),  
+		(4,4) => (10,3*pi/4),
+        (5,4) => (15,3*pi/2),
+		(6,4) => (15,3*pi/2),
+		(7,4) => (15,3*pi/2),
+        (1,3) => (5,0),      
+		(2,3) => (5,pi/2),
+		(3,3) => (10,3*pi/4),
+		(4,3) => (5,7*pi/6),
+        (5,3) => (5,5*pi/4), 
+		(6,3) => (15,3*pi/2),
+		(7,3) => (15,3*pi/2),
+        (1,2) => (5,0),      
+		(2,2) => (5,pi/2),
+		(3,2) => (5,pi),
+		(4,2) => (5,pi),
+        (5,2) => (5,pi),     
+		(6,2) => (5,7*pi/4),
+		(7,2) => (15,3*pi/2),
+        (1,1) => (5,0),      
+		(2,1) => (5,pi/2),
+		(3,1) => (5,3*pi/4),
+		(4,1) => (5,3*pi/4),
+        (5,1) => (5,3*pi/4),
+		(6,1) => (5,3*pi/4),
+		(7,1) => (15,3*pi/2)
+	)
 end	
 
 # ╔═╡ 13dbf845-14a7-4c98-a1db-b3a83c9ce37c
@@ -271,10 +322,10 @@ function R(s, a=missing)
 		return -10
 	elseif s == State(4,6)
 		return -5
-	elseif s == State(9,3)
+	elseif s == State(7,1)
 		return 10
-	elseif s == State(8,8)
-		return 3
+	# elseif s == State(8,8)
+		# return 3
 	else
 		return 0
 	end
@@ -292,8 +343,8 @@ function T(s::State, a::Action)
 	p_transition = params.p_transition
 
 	for (i, a′) in enumerate(𝒜) 
-		neighbors = (a' == UP) ? [UL, UR] : (a == UR) ? [UP, RIGHT] : [A[i-1], A[i+1]]
-		prob = (a′ == a) ? p_transition : (a' in neighbors) ? (1 - p_transition) / length(neighbors) : 0
+		neighbors = (a′ == UP) ? [UL, UR] : (a == UR) ? [UP, RIGHT] : [𝒜[i-1], 𝒜[i+1]]
+		prob = (a′ == a) ? p_transition : (a′ in neighbors) ? (1 - p_transition) / length(neighbors) : 0
 		destination = s + MOVEMENTS[a′]
 		next_states[i+1] = destination
 
@@ -3438,7 +3489,7 @@ version = "1.4.1+1"
 # ╠═142f0646-541e-453b-a3b1-4b8fadf709cc
 # ╟─c67f7fc6-7af8-4e4f-a341-133c70f879bc
 # ╠═48c966cb-6b79-42a6-8ff0-2fe3261f3981
-# ╟─12501ad4-b42d-4fc4-b54b-30f4b929c0ab
+# ╠═12501ad4-b42d-4fc4-b54b-30f4b929c0ab
 # ╠═ba95fdd5-d643-4de2-8235-90e2b5651410
 # ╟─32668e09-b12b-43c8-862f-b6f1a77557ec
 # ╟─90b507bd-8cab-4c30-816e-a4b264e903a6
