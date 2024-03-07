@@ -250,12 +250,12 @@ The possible actions $s$ are movements in the cardinal directions, using Julia's
 function policy_grid(policy::Policy, xmax::Int, ymax::Int)
     arrows = Dict(UP => "↑",
 				  UL => "↖",
-		          UR => "↗",
+				  LEFT => "←",
 		          DL => "↙",
+				  DOWN => "↓",
 		          DR => "↘",
-                  DOWN => "↓",
-                  LEFT => "←",
-                  RIGHT => "→")
+                  RIGHT => "→",
+				  UR => "↗")
 
     grid = Array{String}(undef, xmax, ymax)
     for x = 1:xmax, y = 1:xmax
@@ -343,7 +343,9 @@ function T(s::State, a::Action)
 	p_transition = params.p_transition
 
 	for (i, a′) in enumerate(𝒜) 
-		neighbors = (a′ == UP) ? [UL, UR] : (a == UR) ? [UP, RIGHT] : [𝒜[i-1], 𝒜[i+1]]
+		#println("$i $a′")
+		#println("    $(𝒜[i+1])")
+		neighbors = (a′ == UP) ? [UL, UR] : (a′ == UR) ? [UP, RIGHT] : [𝒜[i-1], 𝒜[i+1]]
 		prob = (a′ == a) ? p_transition : (a′ in neighbors) ? (1 - p_transition) / length(neighbors) : 0
 		destination = s + MOVEMENTS[a′]
 		next_states[i+1] = destination
@@ -1536,9 +1538,13 @@ end
 
 # ╔═╡ c5fbf696-3e5c-4b59-be4d-9a43f30d6211
 begin
+	println("a")
 	grid_plot = render(mdp, policy, 30; outline=false, outline_state=sᵣ)
+	println("b")
 	distr_plot = plot_transition_probability(distr)
+	println("c")
 	plot(grid_plot, distr_plot, layout=2)
+	println("d")
 end
 
 # ╔═╡ 4bb93999-e6b5-4590-8605-9bfe83778890
@@ -3495,10 +3501,10 @@ version = "1.4.1+1"
 # ╟─90b507bd-8cab-4c30-816e-a4b264e903a6
 # ╟─7ee1a2f0-0210-4e89-98e5-73f18fb178b1
 # ╠═73182581-fdf4-4252-b64e-34f39e1f96da
-# ╟─c5fbf696-3e5c-4b59-be4d-9a43f30d6211
+# ╠═c5fbf696-3e5c-4b59-be4d-9a43f30d6211
 # ╟─786b27eb-129f-4538-beca-7e8b69fd40e4
 # ╠═9cb6e19b-25f4-44b5-8155-d55ad3ba617c
-# ╟─da9926ae-4e49-4ff3-abc2-d8249bddb0f2
+# ╠═da9926ae-4e49-4ff3-abc2-d8249bddb0f2
 # ╠═9eba07a6-2753-42c5-8581-3fb7489c066a
 # ╟─b942fd56-13c3-4729-a701-63f103b13638
 # ╟─4de6845e-a555-4147-86e8-d623e399c22a
