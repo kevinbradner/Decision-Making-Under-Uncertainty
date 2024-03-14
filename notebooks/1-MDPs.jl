@@ -46,6 +46,12 @@ using Parameters, Random
 # ╔═╡ 43a7c406-3d59-4b80-8d34-7b6119e9c936
 using Plots; default(fontfamily="Computer Modern", framestyle=:box) # LaTex-style
 
+# ╔═╡ ddd669eb-bdaa-4db3-9781-ed22dc2f0655
+using Distributions: Normal
+
+# ╔═╡ aad71f9f-bc67-4258-8a6c-260e63c40670
+using Distributions: cdf
+
 # ╔═╡ 142f0646-541e-453b-a3b1-4b8fadf709cc
 using DiscreteValueIteration
 
@@ -176,56 +182,56 @@ Base.:(==)(s1::State, s2::State) = (s1.x == s2.x) && (s1.y == s2.y)
 	size::Tuple{Int,Int} = (7, 7)   # size of the grid
 	null_state::State = State(-1, -1) # terminal state outside of the grid
 	p_transition::Real = 0.7 # probability of transitioning to the correct next state
-	wind_dict::Dict{Tuple{Int, Int}, Tuple{Int, Float64}} = Dict(
-		(1,7) => (5,0),      
-		(2,7) => (5,7*pi/4),
-		(3,7) => (10,5*pi/3),
-		(4,7) => (10,3*pi/2),
-		(5,7) => (15,3*pi/2),
-		(6,7) => (15,4*pi/3),
-		(7,7) => (15,4*pi/3),
-		(1,6) => (5,0),
-		(2,6) => (10,pi/4),
-		(3,6) => (10,0),     
-		(4,6) => (10,0),
-		(5,6) => (15,0),
-        (6,6) => (15,7*pi/4),
-		(7,6) => (15,4*pi/3),
-		(1,5) => (5,0),
-        (2,5) => (5,pi/2),   
-		(3,5) => (10,pi/4),
-		(4,5) => (10,0),
-        (5,5) => (15,7*pi/4),
-		(6,5) => (15,3*pi/2),
-		(7,5) => (15,4*pi/3),
-        (1,4) => (5,0),      
-		(2,4) => (5,pi/2),
-		(3,4) => (10,pi/2),  
-		(4,4) => (10,3*pi/4),
-        (5,4) => (15,3*pi/2),
-		(6,4) => (15,3*pi/2),
-		(7,4) => (15,3*pi/2),
-        (1,3) => (5,0),      
-		(2,3) => (5,pi/2),
-		(3,3) => (10,3*pi/4),
-		(4,3) => (5,7*pi/6),
-        (5,3) => (5,5*pi/4), 
-		(6,3) => (15,3*pi/2),
-		(7,3) => (15,3*pi/2),
-        (1,2) => (5,0),      
-		(2,2) => (5,pi/2),
-		(3,2) => (5,pi),
-		(4,2) => (5,pi),
-        (5,2) => (5,pi),     
-		(6,2) => (5,7*pi/4),
-		(7,2) => (15,3*pi/2),
-        (1,1) => (5,0),      
-		(2,1) => (5,pi/2),
-		(3,1) => (5,3*pi/4),
-		(4,1) => (5,3*pi/4),
-        (5,1) => (5,3*pi/4),
-		(6,1) => (5,3*pi/4),
-		(7,1) => (15,3*pi/2)
+	wind_dict::Dict{State, Tuple{Int, Float64}} = Dict(
+		State(1,7) => (5,0),      
+		State(2,7) => (5,7*pi/4),
+		State(3,7) => (10,5*pi/3),
+		State(4,7) => (10,3*pi/2),
+		State(5,7) => (15,3*pi/2),
+		State(6,7) => (15,4*pi/3),
+		State(7,7) => (15,4*pi/3),
+		State(1,6) => (5,0),
+		State(2,6) => (10,pi/4),
+		State(3,6) => (10,0),     
+		State(4,6) => (10,0),
+		State(5,6) => (15,0),
+        State(6,6) => (15,7*pi/4),
+		State(7,6) => (15,4*pi/3),
+		State(1,5) => (5,0),
+        State(2,5) => (5,pi/2),   
+		State(3,5) => (10,pi/4),
+		State(4,5) => (10,0),
+        State(5,5) => (15,7*pi/4),
+		State(6,5) => (15,3*pi/2),
+		State(7,5) => (15,4*pi/3),
+        State(1,4) => (5,0),      
+		State(2,4) => (5,pi/2),
+		State(3,4) => (10,pi/2),  
+		State(4,4) => (10,3*pi/4),
+        State(5,4) => (15,3*pi/2),
+		State(6,4) => (15,3*pi/2),
+		State(7,4) => (15,3*pi/2),
+        State(1,3) => (5,0),      
+		State(2,3) => (5,pi/2),
+		State(3,3) => (10,3*pi/4),
+		State(4,3) => (5,7*pi/6),
+        State(5,3) => (5,5*pi/4), 
+		State(6,3) => (15,3*pi/2),
+		State(7,3) => (15,3*pi/2),
+        State(1,2) => (5,0),      
+		State(2,2) => (5,pi/2),
+		State(3,2) => (5,pi),
+		State(4,2) => (5,pi),
+        State(5,2) => (5,pi),     
+		State(6,2) => (5,7*pi/4),
+		State(7,2) => (15,3*pi/2),
+        State(1,1) => (5,0),      
+		State(2,1) => (5,pi/2),
+		State(3,1) => (5,3*pi/4),
+		State(4,1) => (5,3*pi/4),
+        State(5,1) => (5,3*pi/4),
+		State(6,1) => (5,3*pi/4),
+		State(7,1) => (15,3*pi/2)
 	)
 end	
 
@@ -298,6 +304,18 @@ begin
 	Base.:+(s1::State, s2::State) = State(s1.x + s2.x, s1.y + s2.y)
 end
 
+# ╔═╡ 125d4f9f-748b-4354-83dc-6131b077e52b
+function Velocity(vmin, headAngle, windMag, windAngle)
+	x_comp = vmin * cos(headAngle) + windMag * cos(windAngle)
+	y_comp = vmin * sin(headAngle) + windMag * sin(windAngle)
+
+	r_angle = atan(y_comp, x_comp)
+	r_mag = sqrt(x_comp * x_comp + y_comp * y_comp)
+
+	return(r_angle, r_mag)
+	#Fx = Vmin*jp.cos(HeadAngle)+WindState0*jp.cos(WindState1) 
+end
+
 # ╔═╡ 268e2bb2-e6e2-4198-ad83-a93fcfa65b80
 md"""
 ### Transition Function
@@ -341,12 +359,51 @@ function T(s::State, a::Action)
 	next_states = Vector{State}(undef, Nₐ + 1)
 	probabilities = zeros(Nₐ + 1)
 	p_transition = params.p_transition
+	(local_wind_mag, local_wind_angle) = params.wind_dict[s]
+	
+	
+	intended_dx = MOVEMENTS[a].x
+	intended_dy = MOVEMENTS[a].y
+	
+	headAngle = atan(intended_dy, intended_dx)
+	vmin=20
 
-	for (i, a′) in enumerate(𝒜) 
-		#println("$i $a′")
-		#println("    $(𝒜[i+1])")
-		neighbors = (a′ == UP) ? [UL, UR] : (a′ == UR) ? [UP, RIGHT] : [𝒜[i-1], 𝒜[i+1]]
-		prob = (a′ == a) ? p_transition : (a′ in neighbors) ? (1 - p_transition) / length(neighbors) : 0
+	world_frame_velocity = Velocity(vmin, headAngle, local_wind_mag, local_wind_angle)
+	print(world_frame_velocity)
+	(wfv_angle, wfv_mag) = world_frame_velocity
+	#direction and speed of movement after adding the nominal wind at that point
+
+	octnum = div((wfv_angle + pi / 8), (pi / 4))
+	ctr = octnum * pi / 4
+
+	mvt_gaussian = Normal(wfv_angle, pi/16)
+
+	ao = cdf(mvt_gaussian, ctr - 3 * pi / 8)
+    ab = cdf(mvt_gaussian, ctr - pi / 8)
+    bc = cdf(mvt_gaussian, ctr + pi / 8)
+    co = cdf(mvt_gaussian, ctr + 3 * pi / 8)
+
+	atemp = ab - ao
+    btemp = bc - ab
+    ctemp = co - bc
+
+	psum = atemp + btemp + ctemp
+
+	ccwn_p = atemp / psum
+	intended_p = btemp / psum
+	cwn_p = ctemp / psum
+
+	neighbors = [UL, UR]#dummy initialization
+	for (i, a′) in enumerate(𝒜)
+		if a′ == a
+			neighbors = (a == UP) ? [UL, UR] : (a == UR) ? [UP, RIGHT] : [𝒜[i-1], 𝒜[i+1]]
+		end
+	end
+	(neighbor_ccw, neighbor_cw) = neighbors
+	
+	for (i, a′) in enumerate(𝒜) 	
+		prob = (a′ == a) ? intended_p : (a′ == neighbor_ccw) ? ccwn_p : (a′ == neighbor_cw) ? cwn_p : 0
+		
 		destination = s + MOVEMENTS[a′]
 		next_states[i+1] = destination
 
@@ -361,6 +418,9 @@ function T(s::State, a::Action)
 
 	return SparseCat(next_states, probabilities)
 end
+
+# ╔═╡ 3712fb82-4aa4-41bf-a7a4-b61dfbf0c67d
+T(State(2,2), RIGHT)
 
 # ╔═╡ e5286fa6-1a48-4020-ab03-c24a175c8c04
 md"""
@@ -1184,7 +1244,7 @@ mcts_planner = solve(mcts_solver, mcts_mdp);
 md"We can sample a random initial state $s_0$, or pick a starting state."
 
 # ╔═╡ 756cf1c4-ddfb-4173-8287-5eac419093ff
-s₀ = State(8,2) # rand(initialstate(mcts_mdp))
+s₀ = State(4,2) # rand(initialstate(mcts_mdp))
 
 # ╔═╡ 6befa3ba-35e8-4b03-a28b-b30ceb9a66d3
 md"Similar to the `action` function which returns an action, MCTS also has an `action_info` function which—as the name suggests—returns the action and some information. We want to retrieve the `tree` from the `info` object."
@@ -1704,6 +1764,7 @@ ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
 Colors = "5ae59095-9a9b-59fe-a467-6f913c188581"
 D3Trees = "e3df1716-f71e-5df9-9e2d-98e193103c45"
 DiscreteValueIteration = "4b033969-44f6-5439-a48b-c11fa3648068"
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 Latexify = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
 MCTS = "e12ccd36-dcad-5f33-8774-9175229e7b33"
@@ -1726,6 +1787,7 @@ ColorSchemes = "~3.24.0"
 Colors = "~0.12.10"
 D3Trees = "~0.3.3"
 DiscreteValueIteration = "~0.4.7"
+Distributions = "~0.25.107"
 LaTeXStrings = "~1.3.1"
 Latexify = "~0.16.1"
 MCTS = "~0.5.5"
@@ -1748,7 +1810,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.0"
 manifest_format = "2.0"
-project_hash = "5a218fa6772efe92e7b91aff0fea5eabd5dfc959"
+project_hash = "0d26444cda770729a4c31bee8bae6a90bba4be7a"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
@@ -3454,6 +3516,8 @@ version = "1.4.1+1"
 # ╠═232d7d72-94f8-4dfe-abdf-2b6e712847f7
 # ╠═e1850dbb-30ea-4e1e-94f7-10582f89fb5d
 # ╠═43a7c406-3d59-4b80-8d34-7b6119e9c936
+# ╠═ddd669eb-bdaa-4db3-9781-ed22dc2f0655
+# ╠═aad71f9f-bc67-4258-8a6c-260e63c40670
 # ╟─25d170e9-1c26-4058-96fc-04ab47964b51
 # ╠═52b96024-9f52-4f07-926b-2297ed7dd166
 # ╟─d9755f26-3f30-48ba-91d7-266c0204237d
@@ -3475,8 +3539,10 @@ version = "1.4.1+1"
 # ╠═bc541507-61db-4084-9712-1c57d139e17f
 # ╟─b2856919-5529-431b-8025-0b7f3f3081b0
 # ╠═1303be2a-d18c-44b0-afb9-06a6b4ce5c08
+# ╠═125d4f9f-748b-4354-83dc-6131b077e52b
 # ╟─268e2bb2-e6e2-4198-ad83-a93fcfa65b80
 # ╠═27e554ff-9861-4a41-ad65-9d5ae7727e45
+# ╠═3712fb82-4aa4-41bf-a7a4-b61dfbf0c67d
 # ╟─148d8e67-33a4-4065-911e-9ee0c33d8822
 # ╠═49901c66-db64-48a2-b122-84d5f6b769db
 # ╟─51796bfc-ee3c-4cab-9d58-359608fd4106
