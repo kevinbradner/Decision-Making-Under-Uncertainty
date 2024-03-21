@@ -336,22 +336,36 @@ The reward functions $R(s)$ and $R(s,a)$ return the rewards for any given `State
 
 # ╔═╡ f7814a66-23c8-4782-ba06-755397af87db
 function R(s, a=missing)
+
 	if s == State(4,3)
 		return -10
 	elseif s == State(4,6)
 		return -5
 	elseif s == State(7,1)
 		return 10
-	# elseif s == State(8,8)
-		# return 3
-	else
+	elseif ismissing(a)
+		#print("missing a in call to R()")#this is ok when called from T()
 		return 0
+	else
+		(local_wind_mag, local_wind_angle) = params.wind_dict[s]
+		intended_dx = MOVEMENTS[a].x
+		intended_dy = MOVEMENTS[a].y
+	
+		headAngle = atan(intended_dy, intended_dx)
+		vmin=20
+
+		(wfa, world_frame_velocity) = Velocity(vmin, headAngle, local_wind_mag, local_wind_angle)
+
+		intended_distance = sqrt(intended_dx * intended_dx + intended_dy * intended_dy)
+
+		time_taken = intended_distance / world_frame_velocity
+		return -1 * time_taken
 	end
 end
 
 # ╔═╡ 27e554ff-9861-4a41-ad65-9d5ae7727e45
 function T(s::State, a::Action)
-	if R(s) != 0
+	if R(s) != 0#don't include a in this case
 		return Deterministic(params.null_state)
 	end
 
@@ -369,7 +383,7 @@ function T(s::State, a::Action)
 	vmin=20
 
 	world_frame_velocity = Velocity(vmin, headAngle, local_wind_mag, local_wind_angle)
-	print(world_frame_velocity)
+	#print(world_frame_velocity)
 	(wfv_angle, wfv_mag) = world_frame_velocity
 	#direction and speed of movement after adding the nominal wind at that point
 
