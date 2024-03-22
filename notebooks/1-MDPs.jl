@@ -312,6 +312,10 @@ function Velocity(vmin, headAngle, windMag, windAngle)
 	r_angle = atan(y_comp, x_comp)
 	r_mag = sqrt(x_comp * x_comp + y_comp * y_comp)
 
+	if (r_angle < 0)
+		r_angle += 2 * pi
+	end
+
 	return(r_angle, r_mag)
 	#Fx = Vmin*jp.cos(HeadAngle)+WindState0*jp.cos(WindState1) 
 end
@@ -335,7 +339,7 @@ The reward functions $R(s)$ and $R(s,a)$ return the rewards for any given `State
 """
 
 # ╔═╡ f7814a66-23c8-4782-ba06-755397af87db
-function R(s, a=missing)
+function R(s, a=missing, s2=missing)
 
 	if s == State(4,3)
 		return -10
@@ -346,7 +350,35 @@ function R(s, a=missing)
 	elseif ismissing(a)
 		#print("missing a in call to R()")#this is ok when called from T()
 		return 0
+	#elseif !ismissing(s2)
+	#	#print("s2 has a value!")
+	#	(local_wind_mag, local_wind_angle) = params.wind_dict[s]#
+
+		#distance between adjacent cells
+		# c = 200
+		
+		# dx = c * (s2.x - s.x)
+		# dy = c * (s2.y - s.y)
+
+		# #used in Velocity
+		# intended_dx = MOVEMENTS[a].x
+		# intended_dy = MOVEMENTS[a].y
+	
+		# headAngle = atan(intended_dy, intended_dx)
+		# vmin=20
+
+		# (wfa, world_frame_velocity) = Velocity(vmin, headAngle, local_wind_mag, local_wind_angle)
+
+		# #if s == State(2, 3)
+		# 	#print(world_frame_velocity)
+		# #end
+
+		# distance = sqrt(dx * dx + dy * dy)
+
+		# time_taken = distance / world_frame_velocity
+		# return -1 * time_taken
 	else
+		#print("s2 has no value! Proceeding based on intended action.")
 		(local_wind_mag, local_wind_angle) = params.wind_dict[s]
 		intended_dx = MOVEMENTS[a].x
 		intended_dy = MOVEMENTS[a].y
@@ -364,7 +396,7 @@ function R(s, a=missing)
 end
 
 # ╔═╡ 27e554ff-9861-4a41-ad65-9d5ae7727e45
-function T(s::State, a::Action)
+function T(s::State, a::Action, debug=missing)
 	if R(s) != 0#don't include a in this case
 		return Deterministic(params.null_state)
 	end
@@ -383,12 +415,20 @@ function T(s::State, a::Action)
 	vmin=20
 
 	world_frame_velocity = Velocity(vmin, headAngle, local_wind_mag, local_wind_angle)
-	#print(world_frame_velocity)
+	if !ismissing(debug)
+		print(world_frame_velocity)
+	end
 	(wfv_angle, wfv_mag) = world_frame_velocity
 	#direction and speed of movement after adding the nominal wind at that point
-
 	octnum = div((wfv_angle + pi / 8), (pi / 4))
 	ctr = octnum * pi / 4
+
+	if !ismissing(debug)
+		print(octnum)
+		print("\n")
+		print(ctr)
+		print("\n")
+	end
 
 	mvt_gaussian = Normal(wfv_angle, pi/16)
 
@@ -406,6 +446,10 @@ function T(s::State, a::Action)
 	ccwn_p = atemp / psum
 	intended_p = btemp / psum
 	cwn_p = ctemp / psum
+
+	if !ismissing(debug)
+		print(ccwn_p, intended_p, cwn_p)
+	end
 
 	neighbors = [UL, UR]#dummy initialization
 	for (i, a′) in enumerate(𝒜)
@@ -435,6 +479,9 @@ end
 
 # ╔═╡ 3712fb82-4aa4-41bf-a7a4-b61dfbf0c67d
 T(State(2,2), RIGHT)
+
+# ╔═╡ af9e2e9b-8d9c-4487-8c67-4e7d3ec4e304
+R(State(2,3), UP, State(2,4))
 
 # ╔═╡ e5286fa6-1a48-4020-ab03-c24a175c8c04
 md"""
@@ -640,6 +687,15 @@ md"""
 The arrows in each cell (i.e. state) show the policy, and the color represents the discounted utility $U(s)$ (where green is positive utility and red is negative utility).
 """
 
+# ╔═╡ b9100f1b-4903-4edc-a371-2f4b0eb20298
+T(State(5,1), RIGHT, true)
+
+# ╔═╡ d63ff91c-42c9-410f-96f3-27277a6c4b35
+𝒜
+
+# ╔═╡ 1adac9e9-9711-4ed7-b34b-979d272e6267
+params.wind_dict[State(6,2)]
+
 # ╔═╡ a8817d6e-2302-4f39-8b93-66d550ca09ef
 @bind vi_iterations Slider(0:30, default=0, show_value=true)
 
@@ -661,6 +717,12 @@ vi_mdp = QuickMDP(GridWorld,
 
 # ╔═╡ 1540a649-b238-498e-a8fb-5a29461194b5
 vi_policy = solve(vi_solver, vi_mdp);
+
+# ╔═╡ 1ae17bb4-35db-48fa-8b32-b8d669025160
+action(vi_policy, State(5,1))
+
+# ╔═╡ b5834c6a-687b-4b74-869c-6f01fa066fdb
+value(vi_policy, State(5,1))
 
 # ╔═╡ 6d024b5b-faa3-4075-babd-c6b260cef55e
 one_based_policy!(vi_policy); # handles the case when iterations = 0
@@ -3561,6 +3623,7 @@ version = "1.4.1+1"
 # ╠═49901c66-db64-48a2-b122-84d5f6b769db
 # ╟─51796bfc-ee3c-4cab-9d58-359608fd4106
 # ╠═f7814a66-23c8-4782-ba06-755397af87db
+# ╠═af9e2e9b-8d9c-4487-8c67-4e7d3ec4e304
 # ╠═e67994b8-d519-4c24-9d61-5cbef1629baa
 # ╟─e5286fa6-1a48-4020-ab03-c24a175c8c04
 # ╠═87a6c45e-6f3e-428e-8301-3b0c4166a84b
@@ -3592,7 +3655,7 @@ version = "1.4.1+1"
 # ╟─887f90ce-98eb-4262-894b-e14a0a53fa50
 # ╠═8e3c5337-951e-495c-a0e7-b050660d0192
 # ╟─a4e4d65f-a734-404d-8478-029b0017651c
-# ╠═73cde70f-17f9-4ccd-ae4e-0cf050c2915e
+# ╟─73cde70f-17f9-4ccd-ae4e-0cf050c2915e
 # ╠═6b77edd5-79d1-4b0a-b6e2-f8b83af52db7
 # ╠═e06f597d-dc01-4dea-b63a-5f61d49170e0
 # ╟─cd4d33c8-bc24-4327-a65e-ed2d46af766b
@@ -3601,6 +3664,11 @@ version = "1.4.1+1"
 # ╠═4d698cad-a570-4608-b6dd-20de5d7dbe33
 # ╠═5024e6c5-39e2-4bd6-acca-05267cf8639e
 # ╠═1540a649-b238-498e-a8fb-5a29461194b5
+# ╠═1ae17bb4-35db-48fa-8b32-b8d669025160
+# ╠═b5834c6a-687b-4b74-869c-6f01fa066fdb
+# ╠═b9100f1b-4903-4edc-a371-2f4b0eb20298
+# ╠═d63ff91c-42c9-410f-96f3-27277a6c4b35
+# ╠═1adac9e9-9711-4ed7-b34b-979d272e6267
 # ╟─6d024b5b-faa3-4075-babd-c6b260cef55e
 # ╠═4bb93999-e6b5-4590-8605-9bfe83778890
 # ╠═a8817d6e-2302-4f39-8b93-66d550ca09ef
