@@ -527,8 +527,11 @@ end
 # ╔═╡ 3712fb82-4aa4-41bf-a7a4-b61dfbf0c67d
 T(State(2,2), RIGHT)
 
+# ╔═╡ 54d7926d-f8d0-4e95-9b29-5b3ce330ea04
+params.wind_dict[State(2,3)]
+
 # ╔═╡ af9e2e9b-8d9c-4487-8c67-4e7d3ec4e304
-R(State(2,3), UP, State(2,4))
+R(State(2,3), UP, State(3,4))
 
 # ╔═╡ e5286fa6-1a48-4020-ab03-c24a175c8c04
 md"""
@@ -3671,6 +3674,7 @@ version = "1.4.1+1"
 # ╟─51796bfc-ee3c-4cab-9d58-359608fd4106
 # ╠═f45a4ed7-c613-4e5c-8469-534860e365bc
 # ╠═f7814a66-23c8-4782-ba06-755397af87db
+# ╠═54d7926d-f8d0-4e95-9b29-5b3ce330ea04
 # ╠═af9e2e9b-8d9c-4487-8c67-4e7d3ec4e304
 # ╠═e67994b8-d519-4c24-9d61-5cbef1629baa
 # ╟─e5286fa6-1a48-4020-ab03-c24a175c8c04
