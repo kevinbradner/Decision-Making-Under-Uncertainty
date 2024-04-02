@@ -338,8 +338,21 @@ md"""
 The reward functions $R(s)$ and $R(s,a)$ return the rewards for any given `State`. Note, certain problem formulations may use $R(s)$ or $R(s,a)$, or even $R(s,a,s')$ to compute the rewards. The Grid World problem only cares about $R(s)$.
 """
 
+# ╔═╡ f45a4ed7-c613-4e5c-8469-534860e365bc
+function SOC_drop_empirical(anglediff)
+	if (anglediff<=pi/4 || anglediff>=7*pi/4)
+		return 0.04
+	elseif (anglediff>pi/4 && anglediff<=3*pi/4)  
+		return 2* 0.04
+	elseif (anglediff>3*pi/4 && anglediff<=5*pi/4)
+		return 4* 0.04
+	else #if anglediff>5*pi/4 and anglediff<7*pi/4: 
+		return 2* 0.04
+	end
+end
+
 # ╔═╡ f7814a66-23c8-4782-ba06-755397af87db
-function R(s, a=missing, s2=missing)
+function R(s, a=missing, s2=missing, useSOC=true)
 
 	if s == State(4,3)
 		return -10
@@ -378,20 +391,54 @@ function R(s, a=missing, s2=missing)
 		# time_taken = distance / world_frame_velocity
 		# return -1 * time_taken
 	else
-		#print("s2 has no value! Proceeding based on intended action.")
 		(local_wind_mag, local_wind_angle) = params.wind_dict[s]
-		intended_dx = MOVEMENTS[a].x
-		intended_dy = MOVEMENTS[a].y
+		if useSOC
+			Batt_SOH_drop = 0#dummy initialization
+			if (MOVEMENTS[a].x == 0 && MOVEMENTS[a].y == 0)
+            	ang_diff=0
+            	Batt_SOH_drop=0.08
+			elseif (MOVEMENTS[a].x == 1 && MOVEMENTS[a].y == 0)
+            	ang_diff=local_wind_angle-0
+            	Batt_SOH_drop= SOC_drop_empirical(ang_diff)       
+			elseif (MOVEMENTS[a].x == 1 && MOVEMENTS[a].y == 1)
+            	ang_diff=abs(local_wind_angle-pi/4)
+            	Batt_SOH_drop= SOC_drop_empirical(ang_diff)
+			elseif (MOVEMENTS[a].x == 0 && MOVEMENTS[a].y == 1)
+           		ang_diff=abs(local_wind_angle-2*pi/4)
+           		Batt_SOH_drop= SOC_drop_empirical(ang_diff)
+			elseif (MOVEMENTS[a].x == -1 && MOVEMENTS[a].y == 1)
+           		ang_diff=abs(local_wind_angle-3*pi/4)
+           		Batt_SOH_drop= SOC_drop_empirical(ang_diff)
+			elseif (MOVEMENTS[a].x == -1 && MOVEMENTS[a].y == 0)
+           		ang_diff=abs(local_wind_angle-4*pi/4)
+           		Batt_SOH_drop= SOC_drop_empirical(ang_diff)
+			elseif (MOVEMENTS[a].x == -1 && MOVEMENTS[a].y == -1)
+           		ang_diff=abs(local_wind_angle-5*pi/4)
+           		Batt_SOH_drop= SOC_drop_empirical(ang_diff)
+			elseif (MOVEMENTS[a].x == 0 && MOVEMENTS[a].y == -1)
+           		ang_diff=abs(local_wind_angle-6*pi/4)
+           		Batt_SOH_drop= SOC_drop_empirical(ang_diff)
+			else # (MOVEMENTS[a].x == 1 && MOVEMENTS[a].y == -1)
+           		ang_diff=abs(local_wind_angle-7*pi/4)
+           		Batt_SOH_drop= SOC_drop_empirical(ang_diff)
+			end
+			return -Batt_SOH_drop
+		else
+			#print("s2 has no value! Proceeding based on intended action.")
+			
+			intended_dx = MOVEMENTS[a].x
+			intended_dy = MOVEMENTS[a].y
 	
-		headAngle = atan(intended_dy, intended_dx)
-		vmin=20
+			headAngle = atan(intended_dy, intended_dx)
+			vmin=20
 
-		(wfa, world_frame_velocity) = Velocity(vmin, headAngle, local_wind_mag, local_wind_angle)
+			(wfa, world_frame_velocity) = Velocity(vmin, headAngle, local_wind_mag, local_wind_angle)
 
-		intended_distance = sqrt(intended_dx * intended_dx + intended_dy * intended_dy)
+			intended_distance = sqrt(intended_dx * intended_dx + intended_dy * intended_dy)
 
-		time_taken = intended_distance / world_frame_velocity
-		return -1 * time_taken
+			time_taken = intended_distance / world_frame_velocity
+			return -1 * time_taken
+		end
 	end
 end
 
@@ -3622,6 +3669,7 @@ version = "1.4.1+1"
 # ╟─148d8e67-33a4-4065-911e-9ee0c33d8822
 # ╠═49901c66-db64-48a2-b122-84d5f6b769db
 # ╟─51796bfc-ee3c-4cab-9d58-359608fd4106
+# ╠═f45a4ed7-c613-4e5c-8469-534860e365bc
 # ╠═f7814a66-23c8-4782-ba06-755397af87db
 # ╠═af9e2e9b-8d9c-4487-8c67-4e7d3ec4e304
 # ╠═e67994b8-d519-4c24-9d61-5cbef1629baa
