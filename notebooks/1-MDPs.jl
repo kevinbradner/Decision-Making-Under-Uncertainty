@@ -689,7 +689,7 @@ end
 
 # ╔═╡ 786b27eb-129f-4538-beca-7e8b69fd40e4
 md"""
- $(x,y)$ = $(@bind state_x NumberField(1:10, default=8)) | $(@bind state_y NumberField(1:10, default=3))
+ $(x,y)$ = $(@bind state_x NumberField(1:10, default=1)) | $(@bind state_y NumberField(1:10, default=3))
 """
 
 # ╔═╡ 9cb6e19b-25f4-44b5-8155-d55ad3ba617c
@@ -3697,7 +3697,7 @@ version = "1.4.1+1"
 # ╟─7ee1a2f0-0210-4e89-98e5-73f18fb178b1
 # ╠═73182581-fdf4-4252-b64e-34f39e1f96da
 # ╠═c5fbf696-3e5c-4b59-be4d-9a43f30d6211
-# ╟─786b27eb-129f-4538-beca-7e8b69fd40e4
+# ╠═786b27eb-129f-4538-beca-7e8b69fd40e4
 # ╠═9cb6e19b-25f4-44b5-8155-d55ad3ba617c
 # ╠═da9926ae-4e49-4ff3-abc2-d8249bddb0f2
 # ╠═9eba07a6-2753-42c5-8581-3fb7489c066a
