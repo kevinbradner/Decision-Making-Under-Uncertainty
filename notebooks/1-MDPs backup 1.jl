@@ -139,6 +139,16 @@ First we set some parameters that help us define the Grid World environment (the
 These parameters defines the _size_ of the grid, a _null state_ for convenience, and the probability of transitioning to the chosen cell $p_\text{transition}$.
 """
 
+# ╔═╡ c092511d-c2e7-4b8c-8104-b4b10893cb02
+@with_kw struct GridWorldParameters
+	size::Tuple{Int,Int} = (10, 10)   # size of the grid
+	null_state::State = State(-1, -1) # terminal state outside of the grid
+	p_transition::Real = 0.7 # probability of transitioning to the correct next state
+end	
+
+# ╔═╡ 13dbf845-14a7-4c98-a1db-b3a83c9ce37c
+params = GridWorldParameters();
+
 # ╔═╡ 31ae33aa-5f25-4cd8-8e63-8e77c2233208
 md"""
 ### States
@@ -158,6 +168,9 @@ md"""
 The state space $\mathcal{S}$ for the Grid World problem is the set of all $(x,y)$ values in the $10\times10$ grid, including a null state at $(-1, -1)$.
 """
 
+# ╔═╡ 4a14aee4-12f1-4d55-9532-9b88e4c465f8
+𝒮 = [[State(x,y) for x=1:params.size[1], y=1:params.size[2]]..., params.null_state]
+
 # ╔═╡ 99acb099-742c-4d13-abd8-c588217e4466
 md"""
 > **Note**: type `\scrS` then `<TAB>` to generate `𝒮` (example of LaTeX-style unicode characters).
@@ -170,19 +183,6 @@ We also define the `==` function so we can directly compare `State` types.
 
 # ╔═╡ c1d07fca-1fbd-4450-96b1-c829d7ad8306
 Base.:(==)(s1::State, s2::State) = (s1.x == s2.x) && (s1.y == s2.y)
-
-# ╔═╡ c092511d-c2e7-4b8c-8104-b4b10893cb02
-@with_kw struct GridWorldParameters
-	size::Tuple{Int,Int} = (10, 10)   # size of the grid
-	null_state::State = State(-1, -1) # terminal state outside of the grid
-	p_transition::Real = 0.7 # probability of transitioning to the correct next state
-end	
-
-# ╔═╡ 13dbf845-14a7-4c98-a1db-b3a83c9ce37c
-params = GridWorldParameters();
-
-# ╔═╡ 4a14aee4-12f1-4d55-9532-9b88e4c465f8
-𝒮 = [[State(x,y) for x=1:params.size[1], y=1:params.size[2]]..., params.null_state]
 
 # ╔═╡ dcfc1975-04e8-4d8e-ab46-d1e0846c071e
 md"""
@@ -247,30 +247,10 @@ md"We define a boundry helper function to ensure the agent stays within the grid
 # ╔═╡ 49901c66-db64-48a2-b122-84d5f6b769db
 inbounds(s::State) = 1 ≤ s.x ≤ params.size[1] && 1 ≤ s.y ≤ params.size[2]
 
-# ╔═╡ 51796bfc-ee3c-4cab-9d58-359608fd4106
-md"""
-### Reward Function
-The reward functions $R(s)$ and $R(s,a)$ return the rewards for any given `State`. Note, certain problem formulations may use $R(s)$ or $R(s,a)$, or even $R(s,a,s')$ to compute the rewards. The Grid World problem only cares about $R(s)$.
-"""
-
-# ╔═╡ f7814a66-23c8-4782-ba06-755397af87db
-function R(s, a)
-	if s == State(4,3)
-		return -10
-	elseif s == State(4,6)
-		return -5
-	elseif s == State(9,3)
-		return 10
-	elseif s == State(8,8)
-		return 3
-	else
-		return 0
-	end
-end
-
 # ╔═╡ 27e554ff-9861-4a41-ad65-9d5ae7727e45
 function T(s::State, a::Action)
-	if R(s) != 0
+	if s in [State(4,3), State(4,6), State(9,3), State(8,8)]
+	#if R(s) != 0
 		return Deterministic(params.null_state)
 	end
 
@@ -294,6 +274,27 @@ function T(s::State, a::Action)
 	probabilities[1] = 1 - sum(probabilities)
 
 	return SparseCat(next_states, probabilities)
+end
+
+# ╔═╡ 51796bfc-ee3c-4cab-9d58-359608fd4106
+md"""
+### Reward Function
+The reward functions $R(s)$ and $R(s,a)$ return the rewards for any given `State`. Note, certain problem formulations may use $R(s)$ or $R(s,a)$, or even $R(s,a,s')$ to compute the rewards. The Grid World problem only cares about $R(s)$.
+"""
+
+# ╔═╡ f7814a66-23c8-4782-ba06-755397af87db
+function R(s, a)
+	if s == State(4,3)
+		return -10
+	elseif s == State(4,6)
+		return -5
+	elseif s == State(9,3)
+		return 10
+	elseif s == State(8,8)
+		return 3
+	else
+		return 0
+	end
 end
 
 # ╔═╡ e5286fa6-1a48-4020-ab03-c24a175c8c04
@@ -1475,8 +1476,8 @@ end
 # ╔═╡ c5fbf696-3e5c-4b59-be4d-9a43f30d6211
 begin
 	grid_plot = render(mdp, policy, 30; outline=false, outline_state=sᵣ)
-	distr_plot = plot_transition_probability(distr)
-	plot(grid_plot, distr_plot, layout=2)
+	#distr_plot = plot_transition_probability(distr)
+	#plot(grid_plot, distr_plot, layout=2)
 end
 
 # ╔═╡ 4bb93999-e6b5-4590-8605-9bfe83778890
@@ -3440,8 +3441,8 @@ version = "1.4.1+1"
 # ╟─32668e09-b12b-43c8-862f-b6f1a77557ec
 # ╟─90b507bd-8cab-4c30-816e-a4b264e903a6
 # ╟─7ee1a2f0-0210-4e89-98e5-73f18fb178b1
-# ╟─73182581-fdf4-4252-b64e-34f39e1f96da
-# ╟─c5fbf696-3e5c-4b59-be4d-9a43f30d6211
+# ╠═73182581-fdf4-4252-b64e-34f39e1f96da
+# ╠═c5fbf696-3e5c-4b59-be4d-9a43f30d6211
 # ╟─786b27eb-129f-4538-beca-7e8b69fd40e4
 # ╠═9cb6e19b-25f4-44b5-8155-d55ad3ba617c
 # ╟─da9926ae-4e49-4ff3-abc2-d8249bddb0f2

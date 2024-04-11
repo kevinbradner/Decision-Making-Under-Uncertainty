@@ -52,9 +52,6 @@ using Distributions: Normal
 # ╔═╡ aad71f9f-bc67-4258-8a6c-260e63c40670
 using Distributions: cdf
 
-# ╔═╡ 1ac38756-c96a-4a92-9d17-3591057ee6b8
-using DiscreteValueIteration
-
 # ╔═╡ 80866699-58e9-4c32-a440-c5433c56a0ad
 using Reel
 
@@ -145,38 +142,6 @@ First we set some parameters that help us define the Grid World environment (the
 These parameters defines the _size_ of the grid, a _null state_ for convenience, and the probability of transitioning to the chosen cell $p_\text{transition}$.
 """
 
-# ╔═╡ 31ae33aa-5f25-4cd8-8e63-8e77c2233208
-md"""
-### States
-
-A state $s$ in the Grid World problem is a discrete $(x,y)$ value in a $10\times10$ grid.
-"""
-
-# ╔═╡ b83aceeb-4360-43ab-9396-ac57a9416791
-struct State
-	x::Int
-	y::Int
-end
-
-# ╔═╡ 07846f69-2f7a-4e12-9f4b-6fed8659e9ed
-md"""
-#### State space
-The state space $\mathcal{S}$ for the Grid World problem is the set of all $(x,y)$ values in the $10\times10$ grid, including a null state at $(-1, -1)$.
-"""
-
-# ╔═╡ 99acb099-742c-4d13-abd8-c588217e4466
-md"""
-> **Note**: type `\scrS` then `<TAB>` to generate `𝒮` (example of LaTeX-style unicode characters).
-"""
-
-# ╔═╡ 581376af-21eb-4cc8-91af-7b671ebf4e71
-md"""
-We also define the `==` function so we can directly compare `State` types.
-"""
-
-# ╔═╡ c1d07fca-1fbd-4450-96b1-c829d7ad8306
-Base.:(==)(s1::State, s2::State) = (s1.x == s2.x) && (s1.y == s2.y)
-
 # ╔═╡ c092511d-c2e7-4b8c-8104-b4b10893cb02
 @with_kw struct GridWorldParameters
 	size::Tuple{Int,Int} = (7, 7)   # size of the grid
@@ -238,8 +203,40 @@ end
 # ╔═╡ 13dbf845-14a7-4c98-a1db-b3a83c9ce37c
 params = GridWorldParameters();
 
+# ╔═╡ 31ae33aa-5f25-4cd8-8e63-8e77c2233208
+md"""
+### States
+
+A state $s$ in the Grid World problem is a discrete $(x,y)$ value in a $10\times10$ grid.
+"""
+
+# ╔═╡ b83aceeb-4360-43ab-9396-ac57a9416791
+struct State
+	x::Int
+	y::Int
+end
+
+# ╔═╡ 07846f69-2f7a-4e12-9f4b-6fed8659e9ed
+md"""
+#### State space
+The state space $\mathcal{S}$ for the Grid World problem is the set of all $(x,y)$ values in the $10\times10$ grid, including a null state at $(-1, -1)$.
+"""
+
 # ╔═╡ 4a14aee4-12f1-4d55-9532-9b88e4c465f8
 𝒮 = [[State(x,y) for x=1:params.size[1], y=1:params.size[2]]..., params.null_state]
+
+# ╔═╡ 99acb099-742c-4d13-abd8-c588217e4466
+md"""
+> **Note**: type `\scrS` then `<TAB>` to generate `𝒮` (example of LaTeX-style unicode characters).
+"""
+
+# ╔═╡ 581376af-21eb-4cc8-91af-7b671ebf4e71
+md"""
+We also define the `==` function so we can directly compare `State` types.
+"""
+
+# ╔═╡ c1d07fca-1fbd-4450-96b1-c829d7ad8306
+Base.:(==)(s1::State, s2::State) = (s1.x == s2.x) && (s1.y == s2.y)
 
 # ╔═╡ dcfc1975-04e8-4d8e-ab46-d1e0846c071e
 md"""
@@ -332,119 +329,10 @@ md"We define a boundry helper function to ensure the agent stays within the grid
 # ╔═╡ 49901c66-db64-48a2-b122-84d5f6b769db
 inbounds(s::State) = 1 ≤ s.x ≤ params.size[1] && 1 ≤ s.y ≤ params.size[2]
 
-# ╔═╡ 51796bfc-ee3c-4cab-9d58-359608fd4106
-md"""
-### Reward Function
-The reward functions $R(s)$ and $R(s,a)$ return the rewards for any given `State`. Note, certain problem formulations may use $R(s)$ or $R(s,a)$, or even $R(s,a,s')$ to compute the rewards. The Grid World problem only cares about $R(s)$.
-"""
-
-# ╔═╡ f45a4ed7-c613-4e5c-8469-534860e365bc
-function SOC_drop_empirical(anglediff)
-	if (anglediff<=pi/4 || anglediff>=7*pi/4)
-		return 0.04
-	elseif (anglediff>pi/4 && anglediff<=3*pi/4)  
-		return 2* 0.04
-	elseif (anglediff>3*pi/4 && anglediff<=5*pi/4)
-		return 4* 0.04
-	else #if anglediff>5*pi/4 and anglediff<7*pi/4: 
-		return 2* 0.04
-	end
-end
-
-# ╔═╡ f7814a66-23c8-4782-ba06-755397af87db
-function R(s, a, s2=missing, useSOC=true)
-	#R(s, a=missing, s2=missing, useSOC=true)
-	if s == State(4,3)
-		return -10
-	elseif s == State(4,6)
-		return -5
-	elseif s == State(7,1)
-		return 10
-	elseif ismissing(a)
-		#print("missing a in call to R()")#this is ok when called from T()
-		return 0
-	#elseif !ismissing(s2)
-	#	#print("s2 has a value!")
-	#	(local_wind_mag, local_wind_angle) = params.wind_dict[s]#
-
-		#distance between adjacent cells
-		# c = 200
-		
-		# dx = c * (s2.x - s.x)
-		# dy = c * (s2.y - s.y)
-
-		# #used in Velocity
-		# intended_dx = MOVEMENTS[a].x
-		# intended_dy = MOVEMENTS[a].y
-	
-		# headAngle = atan(intended_dy, intended_dx)
-		# vmin=20
-
-		# (wfa, world_frame_velocity) = Velocity(vmin, headAngle, local_wind_mag, local_wind_angle)
-
-		# #if s == State(2, 3)
-		# 	#print(world_frame_velocity)
-		# #end
-
-		# distance = sqrt(dx * dx + dy * dy)
-
-		# time_taken = distance / world_frame_velocity
-		# return -1 * time_taken
-	else
-		(local_wind_mag, local_wind_angle) = params.wind_dict[s]
-		if useSOC
-			Batt_SOH_drop = 0#dummy initialization
-			if (MOVEMENTS[a].x == 0 && MOVEMENTS[a].y == 0)
-            	ang_diff=0
-            	Batt_SOH_drop=0.08
-			elseif (MOVEMENTS[a].x == 1 && MOVEMENTS[a].y == 0)
-            	ang_diff=local_wind_angle-0
-            	Batt_SOH_drop= SOC_drop_empirical(ang_diff)       
-			elseif (MOVEMENTS[a].x == 1 && MOVEMENTS[a].y == 1)
-            	ang_diff=abs(local_wind_angle-pi/4)
-            	Batt_SOH_drop= SOC_drop_empirical(ang_diff)
-			elseif (MOVEMENTS[a].x == 0 && MOVEMENTS[a].y == 1)
-           		ang_diff=abs(local_wind_angle-2*pi/4)
-           		Batt_SOH_drop= SOC_drop_empirical(ang_diff)
-			elseif (MOVEMENTS[a].x == -1 && MOVEMENTS[a].y == 1)
-           		ang_diff=abs(local_wind_angle-3*pi/4)
-           		Batt_SOH_drop= SOC_drop_empirical(ang_diff)
-			elseif (MOVEMENTS[a].x == -1 && MOVEMENTS[a].y == 0)
-           		ang_diff=abs(local_wind_angle-4*pi/4)
-           		Batt_SOH_drop= SOC_drop_empirical(ang_diff)
-			elseif (MOVEMENTS[a].x == -1 && MOVEMENTS[a].y == -1)
-           		ang_diff=abs(local_wind_angle-5*pi/4)
-           		Batt_SOH_drop= SOC_drop_empirical(ang_diff)
-			elseif (MOVEMENTS[a].x == 0 && MOVEMENTS[a].y == -1)
-           		ang_diff=abs(local_wind_angle-6*pi/4)
-           		Batt_SOH_drop= SOC_drop_empirical(ang_diff)
-			else # (MOVEMENTS[a].x == 1 && MOVEMENTS[a].y == -1)
-           		ang_diff=abs(local_wind_angle-7*pi/4)
-           		Batt_SOH_drop= SOC_drop_empirical(ang_diff)
-			end
-			return -Batt_SOH_drop
-		else
-			#print("s2 has no value! Proceeding based on intended action.")
-			
-			intended_dx = MOVEMENTS[a].x
-			intended_dy = MOVEMENTS[a].y
-	
-			headAngle = atan(intended_dy, intended_dx)
-			vmin=20
-
-			(wfa, world_frame_velocity) = Velocity(vmin, headAngle, local_wind_mag, local_wind_angle)
-
-			intended_distance = sqrt(intended_dx * intended_dx + intended_dy * intended_dy)
-
-			time_taken = intended_distance / world_frame_velocity
-			return -1 * time_taken
-		end
-	end
-end
-
 # ╔═╡ 27e554ff-9861-4a41-ad65-9d5ae7727e45
 function T(s::State, a::Action, debug=missing)
-	if R(s) != 0#don't include a in this case
+	if s in [State(4,3), State(4,6), State(9,3), State(8,8)]
+	#if R(s) != 0#don't include a in this case
 		return Deterministic(params.null_state)
 	end
 
@@ -526,6 +414,117 @@ end
 
 # ╔═╡ 3712fb82-4aa4-41bf-a7a4-b61dfbf0c67d
 T(State(2,2), RIGHT)
+
+# ╔═╡ 51796bfc-ee3c-4cab-9d58-359608fd4106
+md"""
+### Reward Function
+The reward functions $R(s)$ and $R(s,a)$ return the rewards for any given `State`. Note, certain problem formulations may use $R(s)$ or $R(s,a)$, or even $R(s,a,s')$ to compute the rewards. The Grid World problem only cares about $R(s)$.
+"""
+
+# ╔═╡ f45a4ed7-c613-4e5c-8469-534860e365bc
+function SOC_drop_empirical(anglediff)
+	if (anglediff<=pi/4 || anglediff>=7*pi/4)
+		return 0.04
+	elseif (anglediff>pi/4 && anglediff<=3*pi/4)  
+		return 2* 0.04
+	elseif (anglediff>3*pi/4 && anglediff<=5*pi/4)
+		return 4* 0.04
+	else #if anglediff>5*pi/4 and anglediff<7*pi/4: 
+		return 2* 0.04
+	end
+end
+
+# ╔═╡ f7814a66-23c8-4782-ba06-755397af87db
+function R(s, a=missing, s2=missing, useSOC=true)
+	#R(s, a=missing, s2=missing, useSOC=true)
+	if s == State(4,3)
+		return -10
+	elseif s == State(4,6)
+		return -5
+	elseif s == State(7,1)
+		return 10
+	
+	elseif (ismissing(a) || ismissing(s2))
+		#print("missing a in call to R()")#this is ok when called from T()
+		return 0
+	#elseif !ismissing(s2)
+	#	#print("s2 has a value!")
+	#	(local_wind_mag, local_wind_angle) = params.wind_dict[s]#
+
+		#distance between adjacent cells
+		# c = 200
+		
+		# dx = c * (s2.x - s.x)
+		# dy = c * (s2.y - s.y)
+
+		# #used in Velocity
+		# intended_dx = MOVEMENTS[a].x
+		# intended_dy = MOVEMENTS[a].y
+	
+		# headAngle = atan(intended_dy, intended_dx)
+		# vmin=20
+
+		# (wfa, world_frame_velocity) = Velocity(vmin, headAngle, local_wind_mag, local_wind_angle)
+
+		# #if s == State(2, 3)
+		# 	#print(world_frame_velocity)
+		# #end
+
+		# distance = sqrt(dx * dx + dy * dy)
+
+		# time_taken = distance / world_frame_velocity
+		# return -1 * time_taken
+	else
+		(local_wind_mag, local_wind_angle) = params.wind_dict[s]
+		if useSOC
+			Batt_SOH_drop = 0#dummy initialization
+			if (MOVEMENTS[a].x == 0 && MOVEMENTS[a].y == 0)
+            	ang_diff=0
+            	Batt_SOH_drop=0.08
+			elseif (MOVEMENTS[a].x == 1 && MOVEMENTS[a].y == 0)
+            	ang_diff=local_wind_angle-0
+            	Batt_SOH_drop= SOC_drop_empirical(ang_diff)       
+			elseif (MOVEMENTS[a].x == 1 && MOVEMENTS[a].y == 1)
+            	ang_diff=abs(local_wind_angle-pi/4)
+            	Batt_SOH_drop= SOC_drop_empirical(ang_diff)
+			elseif (MOVEMENTS[a].x == 0 && MOVEMENTS[a].y == 1)
+           		ang_diff=abs(local_wind_angle-2*pi/4)
+           		Batt_SOH_drop= SOC_drop_empirical(ang_diff)
+			elseif (MOVEMENTS[a].x == -1 && MOVEMENTS[a].y == 1)
+           		ang_diff=abs(local_wind_angle-3*pi/4)
+           		Batt_SOH_drop= SOC_drop_empirical(ang_diff)
+			elseif (MOVEMENTS[a].x == -1 && MOVEMENTS[a].y == 0)
+           		ang_diff=abs(local_wind_angle-4*pi/4)
+           		Batt_SOH_drop= SOC_drop_empirical(ang_diff)
+			elseif (MOVEMENTS[a].x == -1 && MOVEMENTS[a].y == -1)
+           		ang_diff=abs(local_wind_angle-5*pi/4)
+           		Batt_SOH_drop= SOC_drop_empirical(ang_diff)
+			elseif (MOVEMENTS[a].x == 0 && MOVEMENTS[a].y == -1)
+           		ang_diff=abs(local_wind_angle-6*pi/4)
+           		Batt_SOH_drop= SOC_drop_empirical(ang_diff)
+			else # (MOVEMENTS[a].x == 1 && MOVEMENTS[a].y == -1)
+           		ang_diff=abs(local_wind_angle-7*pi/4)
+           		Batt_SOH_drop= SOC_drop_empirical(ang_diff)
+			end
+			return -Batt_SOH_drop
+		else
+			#print("s2 has no value! Proceeding based on intended action.")
+			
+			intended_dx = MOVEMENTS[a].x
+			intended_dy = MOVEMENTS[a].y
+	
+			headAngle = atan(intended_dy, intended_dx)
+			vmin=20
+
+			(wfa, world_frame_velocity) = Velocity(vmin, headAngle, local_wind_mag, local_wind_angle)
+
+			intended_distance = sqrt(intended_dx * intended_dx + intended_dy * intended_dy)
+
+			time_taken = intended_distance / world_frame_velocity
+			return -1 * time_taken
+		end
+	end
+end
 
 # ╔═╡ 54d7926d-f8d0-4e95-9b29-5b3ce330ea04
 params.wind_dict[State(2,3)]
@@ -642,12 +641,6 @@ $$\pi^*(s) = \mathop{\rm arg\,max}_a\left(R(s,a) + \gamma \sum_{s^\prime} T(s^\p
 But, of course, we don't have to implement these algorithms ourselves, we can use `POMDPs.jl` 🙃!
 """
 
-# ╔═╡ 142f0646-541e-453b-a3b1-4b8fadf709cc
-# ╠═╡ disabled = true
-#=╠═╡
-using DiscreteValueIteration
-  ╠═╡ =#
-
 # ╔═╡ c67f7fc6-7af8-4e4f-a341-133c70f879bc
 md"Value iteration is *model-based* because it relies on the transition model $T$ and reward model $R$ (also called _transition function_ and _reward function_)."
 
@@ -655,7 +648,10 @@ md"Value iteration is *model-based* because it relies on the transition model $T
 solver = ValueIterationSolver(max_iterations=30, verbose=true);
 
 # ╔═╡ c6af3de1-1d91-4d5a-95a6-4baf9aca3c08
+# ╠═╡ disabled = true
+#=╠═╡
 @requirements_info ValueIterationSolver() mdp()
+  ╠═╡ =#
 
 # ╔═╡ 12501ad4-b42d-4fc4-b54b-30f4b929c0ab
 md"""
@@ -1582,6 +1578,7 @@ function plot_grid_world(mdp::MDP,
     
     if show_rewards
         for s in filter(s->reward(mdp, s) != 0, states(mdp))
+		#for s in filter(s->0 != 0, states(mdp))
             r = reward(mdp, s)
             annotate!([(s.x, s.y, (r, :white, :center, 12, "Computer Modern"))])
         end
@@ -1601,6 +1598,7 @@ function plot_grid_world(mdp::MDP,
 
     if !isnothing(outline_state)
         terminal_states = filter(s->reward(mdp, s) != 0, states(mdp))
+		terminal_states = filter(s->reward(mdp, s) != 0, states(mdp))
         color = (outline_state in terminal_states) ? "yellow" : "blue"
         rect = rectangle(1, 1, outline_state.x - 0.5, outline_state.y - 0.5)
         plot!(rect, fillalpha=0, linecolor=color)
@@ -1736,9 +1734,9 @@ begin
 	println("a")
 	grid_plot = render(mdp, policy, 30; outline=false, outline_state=sᵣ)
 	println("b")
-	distr_plot = plot_transition_probability(distr)
+	#distr_plot = plot_transition_probability(distr)
 	println("c")
-	plot(grid_plot, distr_plot, layout=2)
+	#plot(grid_plot, distr_plot, layout=2)
 	println("d")
 end
 
@@ -1891,6 +1889,17 @@ for (var i=0; i < headers.length; i++) {
 };
 </script>
 """
+
+# ╔═╡ 142f0646-541e-453b-a3b1-4b8fadf709cc
+# ╠═╡ disabled = true
+#=╠═╡
+using DiscreteValueIteration
+  ╠═╡ =#
+
+# ╔═╡ 1ac38756-c96a-4a92-9d17-3591057ee6b8
+#=╠═╡
+using DiscreteValueIteration
+  ╠═╡ =#
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -3654,7 +3663,7 @@ version = "1.4.1+1"
 # ╠═ddd669eb-bdaa-4db3-9781-ed22dc2f0655
 # ╠═aad71f9f-bc67-4258-8a6c-260e63c40670
 # ╠═1ac38756-c96a-4a92-9d17-3591057ee6b8
-# ╟─25d170e9-1c26-4058-96fc-04ab47964b51
+# ╠═25d170e9-1c26-4058-96fc-04ab47964b51
 # ╠═52b96024-9f52-4f07-926b-2297ed7dd166
 # ╟─d9755f26-3f30-48ba-91d7-266c0204237d
 # ╟─e2a84ebf-a259-43c1-b512-f6c6b6e02d14
