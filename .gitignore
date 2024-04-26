@@ -3,3 +3,4 @@
 *.tfevents*
 *.html
 *.png
+.DS_Store
