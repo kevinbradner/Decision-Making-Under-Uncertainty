@@ -526,6 +526,13 @@ function T(s::State, a::Action, debug=missing)
 	next_states[1] = s
 	probabilities[1] = 1 - sum(probabilities)
 
+	if (probabilities[1] < 0)
+		if (probabilities[1] < -0.01)#arbitrary threshold
+			print("normalizing significant negative probability")
+		end
+		probabilities[1] = 0
+	end
+
 	return SparseCat(next_states, probabilities)
 end
 
