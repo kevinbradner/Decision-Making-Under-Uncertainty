@@ -35,6 +35,24 @@ Pkg.add("cuDNN")
 # ╔═╡ fcf1e6a8-30a8-48ca-96ce-700d2d88f1a4
 Pkg.add("Flux")
 
+# ╔═╡ 765bfdad-6461-4260-813c-b4eb76e15a0d
+Pkg.add("PyCall")
+
+# ╔═╡ 3978f252-76e4-4bcb-b941-98ff22319405
+using FFMPEG
+
+# ╔═╡ 7cbda2b8-2818-4820-8091-d4db1b2fd1cf
+using POMDPs
+
+# ╔═╡ b17c899c-dc41-4b0a-8b73-8453646bbe74
+using Flux
+
+# ╔═╡ 89ae1ce4-614a-4112-8298-82e0af1cdca1
+using Crux
+
+# ╔═╡ 205dabb0-4548-4032-ac8b-e131683b024d
+using PyCall
+
 # ╔═╡ 9b81b780-0d6e-4dc2-b636-6cb7b26bce1c
 begin
 	using PlutoUI
@@ -50,18 +68,6 @@ begin
 	"""
 end
 
-# ╔═╡ 3978f252-76e4-4bcb-b941-98ff22319405
-using FFMPEG
-
-# ╔═╡ 7cbda2b8-2818-4820-8091-d4db1b2fd1cf
-using POMDPs
-
-# ╔═╡ b17c899c-dc41-4b0a-8b73-8453646bbe74
-using Flux
-
-# ╔═╡ 89ae1ce4-614a-4112-8298-82e0af1cdca1
-using Crux
-
 # ╔═╡ 361e6e89-d015-4640-9a6d-a65d9be8a691
 using POMDPGym
 
@@ -73,8 +79,17 @@ _Deep reinforcement learning_ combines algorithms from _reinforcement learning_ 
 The [`Crux`](https://github.com/ancorso/Crux.jl) package implements several deep RL solvers using the `POMDPs.jl` interface and `Flux.jl` for deep learning.
 """
 
-# ╔═╡ 49f62254-2dee-4d8e-a9f6-74618536dd5b
+# ╔═╡ 90811ec8-12b5-4738-ae1d-1927214305e9
+# ╠═╡ disabled = true
+#=╠═╡
+Pkg.add("PlutoDependencyExplorer")
+  ╠═╡ =#
 
+# ╔═╡ 962c44aa-faff-4f20-b300-5cff95b7ddf8
+# ╠═╡ disabled = true
+#=╠═╡
+using PlutoDependencyExplorer
+  ╠═╡ =#
 
 # ╔═╡ 857a1d04-074b-4195-b39d-aa7c4029679c
 md"""
@@ -113,6 +128,9 @@ md"""
 ### MDP definition
 We use the `PendulumMDP` defined in the [`POMDPGym`](https://github.com/ancorso/POMDPGym.jl) package that wraps Open AI's [gym](https://gym.openai.com/envs/#classic_control) environments but also implements some Julia-only gym-like environments (where the pendulum is an example of one such environment).
 """
+
+# ╔═╡ ae9ff7de-1d20-4a6c-8709-39730b49b673
+pyimport_conda("gym", "gym-all")
 
 # ╔═╡ f679c89e-be33-4f65-90f3-b9954c9bcb44
 mdp = PendulumMDP(actions=𝒜);
@@ -180,6 +198,9 @@ The `ActorCritic` policy combines the _actor_ and _critic_ so when we want to ge
 # ╔═╡ c7e9c6fc-04fc-4fc8-84d8-2af6b6d7a3e0
 π_actor_critic = ActorCritic(actor(), critic());
 
+# ╔═╡ 75d226b6-9012-4a4f-abec-785adbd70c0d
+action_space(π_actor_critic)
+
 # ╔═╡ e40c16c7-d186-46b6-b2b6-ee4806abd10c
 md"""
 ### Solver: Proximal Policy Optimization (PPO)
@@ -188,9 +209,6 @@ The _proximal policy optimization_ (PPO) algorithm is a deep reinforcement learn
 
 # ╔═╡ 4e86c512-f2a3-49f2-b466-1bd2284fa4f8
 solver_ppo = PPO(π=π_actor_critic, S=𝒮, N=100000, ΔN=2048, a_opt=(batch_size=512,));
-
-# ╔═╡ 75d226b6-9012-4a4f-abec-785adbd70c0d
-action_space(solver_ppo.π)
 
 # ╔═╡ 30733eae-e687-41bd-ba93-ae7668f08b54
 md"""
@@ -233,6 +251,9 @@ function Q_network()
 	return DiscreteNetwork(Chain(layer1, layer2, layer3), 𝒜)
 end
 
+# ╔═╡ 61fe850f-02f8-4fbd-93b0-e35f71129d21
+action_space(Q_network())
+
 # ╔═╡ ff38b524-1e70-4e39-8661-498c4c95a0d9
 md"""
 ### Solver: DQN
@@ -241,9 +262,6 @@ We construct the DQN solver using the Q-network as our policy.
 
 # ╔═╡ 27b845dd-c6bf-4cee-9c30-05a2f4679499
 solver_dqn = DQN(π=Q_network(), S=𝒮, N=30000);
-
-# ╔═╡ 61fe850f-02f8-4fbd-93b0-e35f71129d21
-action_space(solver_dqn.π)
 
 # ╔═╡ 0baf5fb6-a772-4bef-a31f-880db9e43736
 md"""
@@ -359,13 +377,14 @@ for (var i=0; i < headers.length; i++) {
 # ╟─3c534838-4023-4e01-996a-9dc2f5422ed0
 # ╠═f9da2459-a6de-4a39-b0ba-e136dc5962e2
 # ╠═3978f252-76e4-4bcb-b941-98ff22319405
-# ╠═49f62254-2dee-4d8e-a9f6-74618536dd5b
 # ╠═c740d81d-aec8-4c4d-8c43-8f90c79804f9
 # ╠═ae26747f-0f0c-4ef8-887c-a6740da50614
 # ╠═7cbda2b8-2818-4820-8091-d4db1b2fd1cf
 # ╠═fcf1e6a8-30a8-48ca-96ce-700d2d88f1a4
 # ╠═b17c899c-dc41-4b0a-8b73-8453646bbe74
 # ╠═89ae1ce4-614a-4112-8298-82e0af1cdca1
+# ╠═90811ec8-12b5-4738-ae1d-1927214305e9
+# ╠═962c44aa-faff-4f20-b300-5cff95b7ddf8
 # ╟─857a1d04-074b-4195-b39d-aa7c4029679c
 # ╠═407d6c14-c658-4de8-addb-98b8e7e501b3
 # ╟─1126debb-54b8-441e-b479-13f650984b26
@@ -376,6 +395,9 @@ for (var i=0; i < headers.length; i++) {
 # ╟─58579d8b-d51a-445a-a35b-6844497c1b29
 # ╠═807d88a4-3a98-4130-8f7d-68db328c8ebb
 # ╟─9a0ed9f7-c0e6-427c-bbad-7ab664d0a259
+# ╠═765bfdad-6461-4260-813c-b4eb76e15a0d
+# ╠═205dabb0-4548-4032-ac8b-e131683b024d
+# ╠═ae9ff7de-1d20-4a6c-8709-39730b49b673
 # ╠═3940e6ed-74ca-479c-967f-eb17369306b5
 # ╠═361e6e89-d015-4640-9a6d-a65d9be8a691
 # ╠═f679c89e-be33-4f65-90f3-b9954c9bcb44

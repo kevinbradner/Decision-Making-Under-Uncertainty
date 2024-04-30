@@ -52,9 +52,6 @@ using Distributions: Normal
 # ╔═╡ aad71f9f-bc67-4258-8a6c-260e63c40670
 using Distributions: cdf
 
-# ╔═╡ 1ac38756-c96a-4a92-9d17-3591057ee6b8
-using DiscreteValueIteration
-
 # ╔═╡ 80866699-58e9-4c32-a440-c5433c56a0ad
 using Reel
 
@@ -145,38 +142,6 @@ First we set some parameters that help us define the Grid World environment (the
 These parameters defines the _size_ of the grid, a _null state_ for convenience, and the probability of transitioning to the chosen cell $p_\text{transition}$.
 """
 
-# ╔═╡ 31ae33aa-5f25-4cd8-8e63-8e77c2233208
-md"""
-### States
-
-A state $s$ in the Grid World problem is a discrete $(x,y)$ value in a $10\times10$ grid.
-"""
-
-# ╔═╡ b83aceeb-4360-43ab-9396-ac57a9416791
-struct State
-	x::Int
-	y::Int
-end
-
-# ╔═╡ 07846f69-2f7a-4e12-9f4b-6fed8659e9ed
-md"""
-#### State space
-The state space $\mathcal{S}$ for the Grid World problem is the set of all $(x,y)$ values in the $10\times10$ grid, including a null state at $(-1, -1)$.
-"""
-
-# ╔═╡ 99acb099-742c-4d13-abd8-c588217e4466
-md"""
-> **Note**: type `\scrS` then `<TAB>` to generate `𝒮` (example of LaTeX-style unicode characters).
-"""
-
-# ╔═╡ 581376af-21eb-4cc8-91af-7b671ebf4e71
-md"""
-We also define the `==` function so we can directly compare `State` types.
-"""
-
-# ╔═╡ c1d07fca-1fbd-4450-96b1-c829d7ad8306
-Base.:(==)(s1::State, s2::State) = (s1.x == s2.x) && (s1.y == s2.y)
-
 # ╔═╡ c092511d-c2e7-4b8c-8104-b4b10893cb02
 @with_kw struct GridWorldParameters
 	size::Tuple{Int,Int} = (7, 7)   # size of the grid
@@ -238,8 +203,40 @@ end
 # ╔═╡ 13dbf845-14a7-4c98-a1db-b3a83c9ce37c
 params = GridWorldParameters();
 
+# ╔═╡ 31ae33aa-5f25-4cd8-8e63-8e77c2233208
+md"""
+### States
+
+A state $s$ in the Grid World problem is a discrete $(x,y)$ value in a $10\times10$ grid.
+"""
+
+# ╔═╡ b83aceeb-4360-43ab-9396-ac57a9416791
+struct State
+	x::Int
+	y::Int
+end
+
+# ╔═╡ 07846f69-2f7a-4e12-9f4b-6fed8659e9ed
+md"""
+#### State space
+The state space $\mathcal{S}$ for the Grid World problem is the set of all $(x,y)$ values in the $10\times10$ grid, including a null state at $(-1, -1)$.
+"""
+
 # ╔═╡ 4a14aee4-12f1-4d55-9532-9b88e4c465f8
 𝒮 = [[State(x,y) for x=1:params.size[1], y=1:params.size[2]]..., params.null_state]
+
+# ╔═╡ 99acb099-742c-4d13-abd8-c588217e4466
+md"""
+> **Note**: type `\scrS` then `<TAB>` to generate `𝒮` (example of LaTeX-style unicode characters).
+"""
+
+# ╔═╡ 581376af-21eb-4cc8-91af-7b671ebf4e71
+md"""
+We also define the `==` function so we can directly compare `State` types.
+"""
+
+# ╔═╡ c1d07fca-1fbd-4450-96b1-c829d7ad8306
+Base.:(==)(s1::State, s2::State) = (s1.x == s2.x) && (s1.y == s2.y)
 
 # ╔═╡ dcfc1975-04e8-4d8e-ab46-d1e0846c071e
 md"""
@@ -653,12 +650,6 @@ $$\pi^*(s) = \mathop{\rm arg\,max}_a\left(R(s,a) + \gamma \sum_{s^\prime} T(s^\p
 
 But, of course, we don't have to implement these algorithms ourselves, we can use `POMDPs.jl` 🙃!
 """
-
-# ╔═╡ 142f0646-541e-453b-a3b1-4b8fadf709cc
-# ╠═╡ disabled = true
-#=╠═╡
-using DiscreteValueIteration
-  ╠═╡ =#
 
 # ╔═╡ c67f7fc6-7af8-4e4f-a341-133c70f879bc
 md"Value iteration is *model-based* because it relies on the transition model $T$ and reward model $R$ (also called _transition function_ and _reward function_)."
@@ -1924,6 +1915,17 @@ for (var i=0; i < headers.length; i++) {
 };
 </script>
 """
+
+# ╔═╡ 142f0646-541e-453b-a3b1-4b8fadf709cc
+# ╠═╡ disabled = true
+#=╠═╡
+using DiscreteValueIteration
+  ╠═╡ =#
+
+# ╔═╡ 1ac38756-c96a-4a92-9d17-3591057ee6b8
+#=╠═╡
+using DiscreteValueIteration
+  ╠═╡ =#
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
