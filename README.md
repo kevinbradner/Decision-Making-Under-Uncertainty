@@ -1,3 +1,6 @@
+#install instructions
+in Julia REPL, hit "]" and then run "add FFMPEG@0.4"
+
 # Decision Making Under Uncertainty with POMDPs.jl
 
 <!-- julia blue 4063D8
