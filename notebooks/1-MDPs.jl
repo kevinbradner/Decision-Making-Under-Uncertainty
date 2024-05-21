@@ -139,6 +139,9 @@ using POMDPGym
 # ╔═╡ 09770092-05c4-418b-b1ae-92b7fad1f6ad
 using Flux
 
+# ╔═╡ f217a555-54e2-4b2a-9d67-7e9340147325
+using Crux
+
 # ╔═╡ 1f965ca7-8a36-4acf-a5d0-5e5b092ab6af
 using Crux: DiscreteNetwork, action_space, state_space, DQN, solve
 
@@ -208,9 +211,6 @@ In the _Grid World_ problem, an _agent_ moves around a grid attempting to collec
 
 # ╔═╡ 63b46029-c1c6-43b6-8782-30899b4af98c
 pyimport_conda("gym", "gym-all")
-
-# ╔═╡ f217a555-54e2-4b2a-9d67-7e9340147325
-using Crux
 
 # ╔═╡ e2a84ebf-a259-43c1-b512-f6c6b6e02d14
 md"""
@@ -346,9 +346,6 @@ function policy_grid(policy::Policy, xmax::Int, ymax::Int)
 
     return grid
 end
-
-# ╔═╡ b5fda55a-9c37-44dc-ba67-c7eb66fa11a6
-
 
 # ╔═╡ d66edb3a-7ccc-4e75-8d42-8d5b1ff5afbb
 md"""
@@ -1189,6 +1186,33 @@ end
 # ╔═╡ d313469b-8ff8-437b-b980-3643147ffedc
 action_space(Q_network())
 
+# ╔═╡ ffba0c02-b49b-44ec-8e26-fbe0aba98fbe
+State(0, 0)
+
+# ╔═╡ 279d7550-ac70-4391-85ff-859aff6260d5
+π = Q_network()
+
+# ╔═╡ b1c00123-0c78-43a8-8aad-0876d5bd0553
+π_explore =  Crux.ϵGreedyPolicy(Crux.LinearDecaySchedule(1., 0.1, floor(Int, 30000/2)), π.outputs)
+
+# ╔═╡ 31e06e7a-8d8d-431f-8879-23edd4f47390
+agent = PolicyParams(π=π, π_explore=π_explore, π⁻=deepcopy(π))
+
+# ╔═╡ d26fd72c-b76d-48d7-820c-0aaf489f145b
+log=nothing
+
+# ╔═╡ bd9c7106-bec7-4ac0-8004-c57a59c9123d
+c_opt = TrainingParams(loss=Crux.td_loss(), name=string("critic_"), epochs=4)
+
+# ╔═╡ 9e5dddc2-5152-4d87-ada5-d9724ca8e1ba
+target_fn = Crux.DQN_target
+
+# ╔═╡ e8cc0f99-f846-4612-b6ba-00510d1e19ec
+agent.space
+
+# ╔═╡ a496ec2c-c833-4e28-8f2c-d03ab3bbf72e
+Array(fill(zero(type(agent.space)), dim(agent.space)..., 1000))
+
 # ╔═╡ 799026ed-92f0-439a-a7e3-bd362eb18b99
 md"""
 ## Online Solvers
@@ -1794,6 +1818,87 @@ U(π, s) = maximum(a->Q(π, s, a), actions(mdp)) # utility
 # ╔═╡ e06f597d-dc01-4dea-b63a-5f61d49170e0
 U(policy, sᵣ) == value(policy, sᵣ)
 
+# ╔═╡ 70afdcab-1950-40c7-9517-dc0221c2582e
+ssamp = rand(initialstate(mdp))
+
+# ╔═╡ 4a7a3aec-848b-4400-9669-5271ab5bbb4e
+(AbstractArray, rand(initialstate(mdp)), mdp)
+
+# ╔═╡ ebeb07a9-3ce5-4bc6-a5a3-6b9cc5db13a5
+sso = POMDPs.convert_s(AbstractArray, initialstate(mdp), mdp)
+
+# ╔═╡ a6df6e0a-2e8f-4912-a7b8-e22595bcf867
+css = state_space(sso)
+
+# ╔═╡ 0d469af2-ee02-45f6-a0f9-fcafbf57d6b8
+type(css)
+
+# ╔═╡ 3d2fcda5-5a12-4a3a-ade5-ef010161a197
+# ╠═╡ disabled = true
+#=╠═╡
+zero(type(css))
+  ╠═╡ =#
+
+# ╔═╡ 9eee0130-13dd-42e4-ab63-80cd93f7b49b
+dim(css)
+
+# ╔═╡ c879f1fd-8c81-41b5-9704-1b52dd23fd82
+# ╠═╡ disabled = true
+#=╠═╡
+Crux.mdp_data(css, agent.space, 1000, Symbol[], ArrayType=Array, R=Float32, D=Bool, W=Float32)
+  ╠═╡ =#
+
+# ╔═╡ b378c854-a628-4048-8148-ccd5df02835a
+# ╠═╡ disabled = true
+#=╠═╡
+Array(fill(zero(type(css)), dim(css)..., 1000))
+  ╠═╡ =#
+
+# ╔═╡ 93470482-a648-4189-995c-df9b85d96e8c
+# ╠═╡ disabled = true
+#=╠═╡
+test_exb = Crux.ExperienceBuffer(css, agent.space, 1000, Symbol[])
+  ╠═╡ =#
+
+# ╔═╡ 4bc5c35c-6d54-4ae8-82d6-cfec28cb437a
+dss = DiscreteSpace(sso)
+
+# ╔═╡ 8678ffd0-9b3e-4d9a-bdc2-51488db4fe99
+solver_dqn.S
+
+# ╔═╡ 6798fa98-b54e-4025-ba55-c456ffe6c038
+solver_dqn.S.vals
+
+# ╔═╡ 33eae184-86bd-4b0f-9547-7f5ba327a32e
+Flux.onehot(State(1,1), solver_dqn.S.vals)
+
+# ╔═╡ b42c3f77-5536-4a78-85df-c46f7f98fe79
+rand(initialstate(mdp))
+
+# ╔═╡ f1491b8b-b27a-49ac-b7fa-64e9d33a3307
+srand = rand(initialstate(mdp))
+
+# ╔═╡ afd613b9-788f-47fa-974e-90195dc0d900
+initial_observation(mdp, srand)
+
+# ╔═╡ d83d0ab3-5f33-43f6-9700-1d63eee1f36b
+sampler = Crux.Sampler(
+	mdp, 
+	solver_dqn.agent, 
+	s=srand,
+	S=solver_dqn.S, 
+	#svec = Flux.onehot(State(1,1), solver_dqn.S.vals),
+	svec=Crux.tovec(srand, dss),
+	max_steps=solver_dqn.max_steps, 
+	required_columns=solver_dqn.required_columns
+)
+
+# ╔═╡ 6efdc038-e234-4748-8efc-ef3372916cdf
+initial_observation(sampler.mdp, sampler.s)
+
+# ╔═╡ 1572f01a-5414-4b51-980b-9e248bb37186
+policy_dqn = solve(solver_dqn, mdp)
+
 # ╔═╡ 50ce080c-235f-425a-925d-65f1c29e7d60
 with_terminal() do
 	for (s,a,r) in stepthrough(mdp, policy, "s,a,r", max_steps=100)
@@ -2016,6 +2121,26 @@ for (var i=0; i < headers.length; i++) {
 </script>
 """
 
+# ╔═╡ 0e1876b6-be76-4c36-879f-0874cb294d86
+# ╠═╡ disabled = true
+#=╠═╡
+function zero(T::Type{A1}) where {A1<:typeof(State(0,0))}
+	return State(0,0)
+end
+  ╠═╡ =#
+
+# ╔═╡ f2bea74c-9222-456c-bfa7-8ce8e8e7fb69
+# ╠═╡ disabled = true
+#=╠═╡
+solver_dqn = OffPolicySolver(agent=agent, log=log, N=30000, ΔN=4, c_opt=c_opt, target_fn=target_fn, S=css)
+  ╠═╡ =#
+
+# ╔═╡ a844f1ad-73c0-4423-b0f8-c1005d7ce932
+solver_dqn = DQN(π=Q_network(), S=dss, N=30000)
+
+# ╔═╡ 8bc6fabc-35c1-4de1-9fe8-23305fe4f723
+import Base.zero
+
 # ╔═╡ Cell order:
 # ╟─7ce1bec4-f238-407e-aefb-c633ee2fadd5
 # ╠═db0265cd-ebe0-4bf2-9e70-c0f978b91ff6
@@ -2079,7 +2204,6 @@ for (var i=0; i < headers.length; i++) {
 # ╠═c1d07fca-1fbd-4450-96b1-c829d7ad8306
 # ╟─dcfc1975-04e8-4d8e-ab46-d1e0846c071e
 # ╠═bcc5e8a3-1e3a-40cf-a306-13599a4952ac
-# ╠═b5fda55a-9c37-44dc-ba67-c7eb66fa11a6
 # ╟─d66edb3a-7ccc-4e75-8d42-8d5b1ff5afbb
 # ╠═bc541507-61db-4084-9712-1c57d139e17f
 # ╟─b2856919-5529-431b-8025-0b7f3f3081b0
@@ -2177,6 +2301,39 @@ for (var i=0; i < headers.length; i++) {
 # ╠═cabde5e8-a783-4c93-af0f-d9e0eee264ce
 # ╠═b0d01d02-8d4e-41b4-9e0b-9c453f76aed2
 # ╠═d313469b-8ff8-437b-b980-3643147ffedc
+# ╠═70afdcab-1950-40c7-9517-dc0221c2582e
+# ╠═4a7a3aec-848b-4400-9669-5271ab5bbb4e
+# ╠═ebeb07a9-3ce5-4bc6-a5a3-6b9cc5db13a5
+# ╠═0d469af2-ee02-45f6-a0f9-fcafbf57d6b8
+# ╠═0e1876b6-be76-4c36-879f-0874cb294d86
+# ╠═a6df6e0a-2e8f-4912-a7b8-e22595bcf867
+# ╠═4bc5c35c-6d54-4ae8-82d6-cfec28cb437a
+# ╠═a844f1ad-73c0-4423-b0f8-c1005d7ce932
+# ╠═8678ffd0-9b3e-4d9a-bdc2-51488db4fe99
+# ╠═b42c3f77-5536-4a78-85df-c46f7f98fe79
+# ╠═ffba0c02-b49b-44ec-8e26-fbe0aba98fbe
+# ╠═6798fa98-b54e-4025-ba55-c456ffe6c038
+# ╠═33eae184-86bd-4b0f-9547-7f5ba327a32e
+# ╠═f1491b8b-b27a-49ac-b7fa-64e9d33a3307
+# ╠═afd613b9-788f-47fa-974e-90195dc0d900
+# ╠═d83d0ab3-5f33-43f6-9700-1d63eee1f36b
+# ╠═6efdc038-e234-4748-8efc-ef3372916cdf
+# ╠═1572f01a-5414-4b51-980b-9e248bb37186
+# ╠═279d7550-ac70-4391-85ff-859aff6260d5
+# ╠═b1c00123-0c78-43a8-8aad-0876d5bd0553
+# ╠═31e06e7a-8d8d-431f-8879-23edd4f47390
+# ╠═d26fd72c-b76d-48d7-820c-0aaf489f145b
+# ╠═bd9c7106-bec7-4ac0-8004-c57a59c9123d
+# ╠═9e5dddc2-5152-4d87-ada5-d9724ca8e1ba
+# ╠═3d2fcda5-5a12-4a3a-ade5-ef010161a197
+# ╠═9eee0130-13dd-42e4-ab63-80cd93f7b49b
+# ╠═e8cc0f99-f846-4612-b6ba-00510d1e19ec
+# ╠═c879f1fd-8c81-41b5-9704-1b52dd23fd82
+# ╠═b378c854-a628-4048-8148-ccd5df02835a
+# ╠═8bc6fabc-35c1-4de1-9fe8-23305fe4f723
+# ╠═a496ec2c-c833-4e28-8f2c-d03ab3bbf72e
+# ╠═93470482-a648-4189-995c-df9b85d96e8c
+# ╠═f2bea74c-9222-456c-bfa7-8ce8e8e7fb69
 # ╟─799026ed-92f0-439a-a7e3-bd362eb18b99
 # ╟─3484668f-9cdb-4ac9-b683-8054f0ea9d7e
 # ╟─105a8fb9-008c-4ae1-83e8-8894209ada0e
