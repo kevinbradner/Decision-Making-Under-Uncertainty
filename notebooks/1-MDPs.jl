@@ -1186,8 +1186,27 @@ end
 # ╔═╡ d313469b-8ff8-437b-b980-3643147ffedc
 action_space(Q_network())
 
+# ╔═╡ 0e1876b6-be76-4c36-879f-0874cb294d86
+# ╠═╡ disabled = true
+#=╠═╡
+function zero(T::Type{A1}) where {A1<:typeof(State(0,0))}
+	return State(0,0)
+end
+  ╠═╡ =#
+
 # ╔═╡ ffba0c02-b49b-44ec-8e26-fbe0aba98fbe
 State(0, 0)
+
+# ╔═╡ 2009c8c9-bae0-40e3-a1be-7ec4e9a09d4d
+POMDPs.convert_s(T::Type{<:AbstractArray}, s::State, m::QuickPOMDPs.QuickMDP) = convert(T, vcat(s))
+
+# ╔═╡ 714a3736-cb91-4aae-844c-e458e885f7b8
+# ╠═╡ disabled = true
+#=╠═╡
+function convert_s(T::Type{A1}, s::State, problem::MDP) where {A1<:AbstractArray}
+	return s
+end
+  ╠═╡ =#
 
 # ╔═╡ 279d7550-ac70-4391-85ff-859aff6260d5
 π = Q_network()
@@ -1207,11 +1226,44 @@ c_opt = TrainingParams(loss=Crux.td_loss(), name=string("critic_"), epochs=4)
 # ╔═╡ 9e5dddc2-5152-4d87-ada5-d9724ca8e1ba
 target_fn = Crux.DQN_target
 
+# ╔═╡ 3d2fcda5-5a12-4a3a-ade5-ef010161a197
+# ╠═╡ disabled = true
+#=╠═╡
+zero(type(css))
+  ╠═╡ =#
+
 # ╔═╡ e8cc0f99-f846-4612-b6ba-00510d1e19ec
 agent.space
 
+# ╔═╡ c879f1fd-8c81-41b5-9704-1b52dd23fd82
+# ╠═╡ disabled = true
+#=╠═╡
+Crux.mdp_data(css, agent.space, 1000, Symbol[], ArrayType=Array, R=Float32, D=Bool, W=Float32)
+  ╠═╡ =#
+
+# ╔═╡ b378c854-a628-4048-8148-ccd5df02835a
+# ╠═╡ disabled = true
+#=╠═╡
+Array(fill(zero(type(css)), dim(css)..., 1000))
+  ╠═╡ =#
+
+# ╔═╡ 8bc6fabc-35c1-4de1-9fe8-23305fe4f723
+import Base.zero
+
 # ╔═╡ a496ec2c-c833-4e28-8f2c-d03ab3bbf72e
 Array(fill(zero(type(agent.space)), dim(agent.space)..., 1000))
+
+# ╔═╡ 93470482-a648-4189-995c-df9b85d96e8c
+# ╠═╡ disabled = true
+#=╠═╡
+test_exb = Crux.ExperienceBuffer(css, agent.space, 1000, Symbol[])
+  ╠═╡ =#
+
+# ╔═╡ f2bea74c-9222-456c-bfa7-8ce8e8e7fb69
+# ╠═╡ disabled = true
+#=╠═╡
+solver_dqn = OffPolicySolver(agent=agent, log=log, N=30000, ΔN=4, c_opt=c_opt, target_fn=target_fn, S=css)
+  ╠═╡ =#
 
 # ╔═╡ 799026ed-92f0-439a-a7e3-bd362eb18b99
 md"""
@@ -1833,41 +1885,23 @@ css = state_space(sso)
 # ╔═╡ 0d469af2-ee02-45f6-a0f9-fcafbf57d6b8
 type(css)
 
-# ╔═╡ 3d2fcda5-5a12-4a3a-ade5-ef010161a197
-# ╠═╡ disabled = true
-#=╠═╡
-zero(type(css))
-  ╠═╡ =#
-
 # ╔═╡ 9eee0130-13dd-42e4-ab63-80cd93f7b49b
 dim(css)
 
-# ╔═╡ c879f1fd-8c81-41b5-9704-1b52dd23fd82
-# ╠═╡ disabled = true
-#=╠═╡
-Crux.mdp_data(css, agent.space, 1000, Symbol[], ArrayType=Array, R=Float32, D=Bool, W=Float32)
-  ╠═╡ =#
-
-# ╔═╡ b378c854-a628-4048-8148-ccd5df02835a
-# ╠═╡ disabled = true
-#=╠═╡
-Array(fill(zero(type(css)), dim(css)..., 1000))
-  ╠═╡ =#
-
-# ╔═╡ 93470482-a648-4189-995c-df9b85d96e8c
-# ╠═╡ disabled = true
-#=╠═╡
-test_exb = Crux.ExperienceBuffer(css, agent.space, 1000, Symbol[])
-  ╠═╡ =#
-
 # ╔═╡ 4bc5c35c-6d54-4ae8-82d6-cfec28cb437a
 dss = DiscreteSpace(sso)
+
+# ╔═╡ a844f1ad-73c0-4423-b0f8-c1005d7ce932
+solver_dqn = DQN(π=Q_network(), S=dss, N=30000)
 
 # ╔═╡ 8678ffd0-9b3e-4d9a-bdc2-51488db4fe99
 solver_dqn.S
 
 # ╔═╡ 6798fa98-b54e-4025-ba55-c456ffe6c038
 solver_dqn.S.vals
+
+# ╔═╡ 65cc321c-85e4-47a7-9ba8-9c943dcf4426
+State(4, 5) in solver_dqn.S.vals
 
 # ╔═╡ 33eae184-86bd-4b0f-9547-7f5ba327a32e
 Flux.onehot(State(1,1), solver_dqn.S.vals)
@@ -1878,8 +1912,8 @@ rand(initialstate(mdp))
 # ╔═╡ f1491b8b-b27a-49ac-b7fa-64e9d33a3307
 srand = rand(initialstate(mdp))
 
-# ╔═╡ afd613b9-788f-47fa-974e-90195dc0d900
-initial_observation(mdp, srand)
+# ╔═╡ f5b900e6-dccb-4b4a-93ea-a80a717d65f9
+POMDPs.convert_s(AbstractArray, State(1,1), mdp)
 
 # ╔═╡ d83d0ab3-5f33-43f6-9700-1d63eee1f36b
 sampler = Crux.Sampler(
@@ -2121,26 +2155,6 @@ for (var i=0; i < headers.length; i++) {
 </script>
 """
 
-# ╔═╡ 0e1876b6-be76-4c36-879f-0874cb294d86
-# ╠═╡ disabled = true
-#=╠═╡
-function zero(T::Type{A1}) where {A1<:typeof(State(0,0))}
-	return State(0,0)
-end
-  ╠═╡ =#
-
-# ╔═╡ f2bea74c-9222-456c-bfa7-8ce8e8e7fb69
-# ╠═╡ disabled = true
-#=╠═╡
-solver_dqn = OffPolicySolver(agent=agent, log=log, N=30000, ΔN=4, c_opt=c_opt, target_fn=target_fn, S=css)
-  ╠═╡ =#
-
-# ╔═╡ a844f1ad-73c0-4423-b0f8-c1005d7ce932
-solver_dqn = DQN(π=Q_network(), S=dss, N=30000)
-
-# ╔═╡ 8bc6fabc-35c1-4de1-9fe8-23305fe4f723
-import Base.zero
-
 # ╔═╡ Cell order:
 # ╟─7ce1bec4-f238-407e-aefb-c633ee2fadd5
 # ╠═db0265cd-ebe0-4bf2-9e70-c0f978b91ff6
@@ -2313,9 +2327,12 @@ import Base.zero
 # ╠═b42c3f77-5536-4a78-85df-c46f7f98fe79
 # ╠═ffba0c02-b49b-44ec-8e26-fbe0aba98fbe
 # ╠═6798fa98-b54e-4025-ba55-c456ffe6c038
+# ╠═65cc321c-85e4-47a7-9ba8-9c943dcf4426
 # ╠═33eae184-86bd-4b0f-9547-7f5ba327a32e
 # ╠═f1491b8b-b27a-49ac-b7fa-64e9d33a3307
-# ╠═afd613b9-788f-47fa-974e-90195dc0d900
+# ╠═2009c8c9-bae0-40e3-a1be-7ec4e9a09d4d
+# ╠═714a3736-cb91-4aae-844c-e458e885f7b8
+# ╠═f5b900e6-dccb-4b4a-93ea-a80a717d65f9
 # ╠═d83d0ab3-5f33-43f6-9700-1d63eee1f36b
 # ╠═6efdc038-e234-4748-8efc-ef3372916cdf
 # ╠═1572f01a-5414-4b51-980b-9e248bb37186
