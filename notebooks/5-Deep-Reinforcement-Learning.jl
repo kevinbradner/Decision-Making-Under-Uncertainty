@@ -35,23 +35,14 @@ Pkg.add("cuDNN")
 # ╔═╡ fcf1e6a8-30a8-48ca-96ce-700d2d88f1a4
 Pkg.add("Flux")
 
+# ╔═╡ 90811ec8-12b5-4738-ae1d-1927214305e9
+# ╠═╡ disabled = true
+#=╠═╡
+Pkg.add("PlutoDependencyExplorer")
+  ╠═╡ =#
+
 # ╔═╡ 765bfdad-6461-4260-813c-b4eb76e15a0d
 Pkg.add("PyCall")
-
-# ╔═╡ 3978f252-76e4-4bcb-b941-98ff22319405
-using FFMPEG
-
-# ╔═╡ 7cbda2b8-2818-4820-8091-d4db1b2fd1cf
-using POMDPs
-
-# ╔═╡ b17c899c-dc41-4b0a-8b73-8453646bbe74
-using Flux
-
-# ╔═╡ 89ae1ce4-614a-4112-8298-82e0af1cdca1
-using Crux
-
-# ╔═╡ 205dabb0-4548-4032-ac8b-e131683b024d
-using PyCall
 
 # ╔═╡ 9b81b780-0d6e-4dc2-b636-6cb7b26bce1c
 begin
@@ -68,6 +59,27 @@ begin
 	"""
 end
 
+# ╔═╡ 3978f252-76e4-4bcb-b941-98ff22319405
+using FFMPEG
+
+# ╔═╡ 7cbda2b8-2818-4820-8091-d4db1b2fd1cf
+using POMDPs
+
+# ╔═╡ b17c899c-dc41-4b0a-8b73-8453646bbe74
+using Flux
+
+# ╔═╡ 89ae1ce4-614a-4112-8298-82e0af1cdca1
+using Crux
+
+# ╔═╡ 962c44aa-faff-4f20-b300-5cff95b7ddf8
+# ╠═╡ disabled = true
+#=╠═╡
+using PlutoDependencyExplorer
+  ╠═╡ =#
+
+# ╔═╡ 205dabb0-4548-4032-ac8b-e131683b024d
+using PyCall
+
 # ╔═╡ 361e6e89-d015-4640-9a6d-a65d9be8a691
 using POMDPGym
 
@@ -78,18 +90,6 @@ _Deep reinforcement learning_ combines algorithms from _reinforcement learning_ 
 
 The [`Crux`](https://github.com/ancorso/Crux.jl) package implements several deep RL solvers using the `POMDPs.jl` interface and `Flux.jl` for deep learning.
 """
-
-# ╔═╡ 90811ec8-12b5-4738-ae1d-1927214305e9
-# ╠═╡ disabled = true
-#=╠═╡
-Pkg.add("PlutoDependencyExplorer")
-  ╠═╡ =#
-
-# ╔═╡ 962c44aa-faff-4f20-b300-5cff95b7ddf8
-# ╠═╡ disabled = true
-#=╠═╡
-using PlutoDependencyExplorer
-  ╠═╡ =#
 
 # ╔═╡ 857a1d04-074b-4195-b39d-aa7c4029679c
 md"""

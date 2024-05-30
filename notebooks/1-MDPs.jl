@@ -20,6 +20,18 @@ using Pkg
 # ╔═╡ 964ff5fa-444f-4095-9e2b-815dc4a68603
 pkg"add https://github.com/ancorso/Crux.jl"
 
+# ╔═╡ 004510b7-64d1-47ed-b348-7161af733c01
+Pkg.add("Debugger")
+
+# ╔═╡ 60ce9e30-6245-476b-be8d-838e29bc46f9
+Pkg.add("POMDPModels")
+
+# ╔═╡ 4c0e7b16-b878-4a9f-a0cc-9448c311f015
+Pkg.add("StaticArrays")
+
+# ╔═╡ e8ab064f-e58d-4006-abaa-05ebfc87df88
+Pkg.add("OneHotArrays")
+
 # ╔═╡ 317f834a-0512-4f3a-9410-c08cd454e39b
 Pkg.add("QuickPOMDPs")
 
@@ -64,6 +76,18 @@ Pkg.add("D3Trees")
 
 # ╔═╡ 73d38b5c-c823-47ec-b5a0-12e84760cee7
 Pkg.add("TabularTDLearning")
+
+# ╔═╡ 00f31771-a287-47b9-8adf-40c7d23bb7ea
+using Debugger
+
+# ╔═╡ 3c4e8e72-015c-4ad4-b2de-ed1bb1eacc37
+using POMDPModels
+
+# ╔═╡ 594c88f5-5e84-4abf-8218-f905fbf0e922
+using StaticArrays
+
+# ╔═╡ e3be07a0-191e-4180-8e8f-02a07dd08352
+using OneHotArrays
 
 # ╔═╡ 8477c27b-ea40-4c59-b1ca-da8b641eb884
 using POMDPs          # for MDP type
@@ -228,7 +252,7 @@ A state $s$ in the Grid World problem is a discrete $(x,y)$ value in a $10\times
 """
 
 # ╔═╡ b83aceeb-4360-43ab-9396-ac57a9416791
-struct State
+struct State <: StaticArrays.FieldVector{2, Int}
 	x::Int
 	y::Int
 end
@@ -1198,7 +1222,10 @@ end
 State(0, 0)
 
 # ╔═╡ 2009c8c9-bae0-40e3-a1be-7ec4e9a09d4d
+# ╠═╡ disabled = true
+#=╠═╡
 POMDPs.convert_s(T::Type{<:AbstractArray}, s::State, m::QuickPOMDPs.QuickMDP) = convert(T, vcat(s))
+  ╠═╡ =#
 
 # ╔═╡ 714a3736-cb91-4aae-844c-e458e885f7b8
 # ╠═╡ disabled = true
@@ -1207,6 +1234,36 @@ function convert_s(T::Type{A1}, s::State, problem::MDP) where {A1<:AbstractArray
 	return s
 end
   ╠═╡ =#
+
+# ╔═╡ 793485d1-06ab-47ac-a30f-e969dbe60ff8
+typeof(State(-1, -1))
+
+# ╔═╡ 56784563-c8bc-4b42-b0ae-d14c0bc6ef9f
+sgg = POMDPModels.SimpleGridWorld()
+
+# ╔═╡ a5587b98-311b-48f9-b921-fd9e677f693f
+state_space(sgg)
+
+# ╔═╡ b7324c2f-7dd3-45a5-b5a0-a0f160d5b6fe
+solver_dqn_sgg = DQN(π=Q_network(), S=state_space(sgg), N=30000)
+
+# ╔═╡ 2806c392-2f99-4751-8cd2-f8493a0a858a
+policy_sgg = solve(solver_dqn_sgg, sgg)
+
+# ╔═╡ a8711617-3d6f-4465-bc72-ddf315bf187f
+
+
+# ╔═╡ 9840980c-fff7-492f-9e31-8ca0a355edb4
+gmdp = GridWorldMDP()
+
+# ╔═╡ 8a986284-5758-47a1-af46-caf1bf4c8b00
+A_gwmdp() = DiscreteNetwork(Chain(Dense(Crux.dim(state_space(gmdp))..., 64, relu), Dense(64, 64, relu), Dense(64, length(actions(gmdp)))), actions(gmdp))
+
+# ╔═╡ 01268c82-d479-47b7-9ae0-220cda895776
+S_gwmdp_dqn = DQN(π=A_gwmdp(), S=state_space(gmdp), N=10000, interaction_storeage=[])
+
+# ╔═╡ 677640fa-c0fd-49a3-b4d9-73a6c37b94fd
+DiscreteSpace(5)
 
 # ╔═╡ 279d7550-ac70-4391-85ff-859aff6260d5
 π = Q_network()
@@ -1264,6 +1321,27 @@ test_exb = Crux.ExperienceBuffer(css, agent.space, 1000, Symbol[])
 #=╠═╡
 solver_dqn = OffPolicySolver(agent=agent, log=log, N=30000, ΔN=4, c_opt=c_opt, target_fn=target_fn, S=css)
   ╠═╡ =#
+
+# ╔═╡ 3ae03c36-877c-4be6-9ed3-37a5b7bac7f6
+discrete_mdp = GridWorldMDP()
+
+# ╔═╡ 5bc59e80-8892-4397-8952-0f11fc49441b
+S_dm = state_space(discrete_mdp)
+
+# ╔═╡ fecb5e93-7a12-425c-86f8-48d144040a5e
+A_dm() = DiscreteNetwork(Chain(Dense(2, 32, relu), Dense(32, 4)), actions(discrete_mdp))
+
+# ╔═╡ d3dc8b0b-2cda-4a61-b7e3-fd201c85d319
+dqn_dm = DQN(π=A_dm(), S=S_dm, N=100)
+
+# ╔═╡ 942da32d-58f0-4057-88d8-b9077cc350e1
+typeof(S_dm)
+
+# ╔═╡ eab76a21-9f55-4a1e-b01f-fce9d441c1eb
+zero(Tuple{Int64})
+
+# ╔═╡ 44817047-1ed9-40bd-83e8-e8a2f72963a3
+pi_dm = solve(dqn_dm, discrete_mdp)
 
 # ╔═╡ 799026ed-92f0-439a-a7e3-bd362eb18b99
 md"""
@@ -1877,34 +1955,89 @@ ssamp = rand(initialstate(mdp))
 (AbstractArray, rand(initialstate(mdp)), mdp)
 
 # ╔═╡ ebeb07a9-3ce5-4bc6-a5a3-6b9cc5db13a5
+#=╠═╡
 sso = POMDPs.convert_s(AbstractArray, initialstate(mdp), mdp)
+  ╠═╡ =#
 
 # ╔═╡ a6df6e0a-2e8f-4912-a7b8-e22595bcf867
+#=╠═╡
 css = state_space(sso)
+  ╠═╡ =#
 
 # ╔═╡ 0d469af2-ee02-45f6-a0f9-fcafbf57d6b8
+#=╠═╡
 type(css)
+  ╠═╡ =#
 
 # ╔═╡ 9eee0130-13dd-42e4-ab63-80cd93f7b49b
+#=╠═╡
 dim(css)
+  ╠═╡ =#
 
 # ╔═╡ 4bc5c35c-6d54-4ae8-82d6-cfec28cb437a
+#=╠═╡
 dss = DiscreteSpace(sso)
+  ╠═╡ =#
 
 # ╔═╡ a844f1ad-73c0-4423-b0f8-c1005d7ce932
+#=╠═╡
 solver_dqn = DQN(π=Q_network(), S=dss, N=30000)
+  ╠═╡ =#
 
 # ╔═╡ 8678ffd0-9b3e-4d9a-bdc2-51488db4fe99
+#=╠═╡
 solver_dqn.S
+  ╠═╡ =#
 
 # ╔═╡ 6798fa98-b54e-4025-ba55-c456ffe6c038
+#=╠═╡
 solver_dqn.S.vals
+  ╠═╡ =#
 
 # ╔═╡ 65cc321c-85e4-47a7-9ba8-9c943dcf4426
+#=╠═╡
 State(4, 5) in solver_dqn.S.vals
+  ╠═╡ =#
 
 # ╔═╡ 33eae184-86bd-4b0f-9547-7f5ba327a32e
+#=╠═╡
 Flux.onehot(State(1,1), solver_dqn.S.vals)
+  ╠═╡ =#
+
+# ╔═╡ 73c49153-3eb1-4ac7-8cb2-be72bd3b4a78
+#=╠═╡
+solver_dqn.N
+  ╠═╡ =#
+
+# ╔═╡ 0112328f-8cd9-472c-89d6-89a27c1b5740
+#=╠═╡
+solver_dqn.ΔN
+  ╠═╡ =#
+
+# ╔═╡ 581e850c-4f89-4fb7-b674-c7be1b290de3
+#=╠═╡
+solver_dqn.i
+  ╠═╡ =#
+
+# ╔═╡ bd90f02a-99f3-4596-9063-b762cc6d4288
+#=╠═╡
+OneHotArrays.onehot(State(-1, -1), solver_dqn.S.vals)
+  ╠═╡ =#
+
+# ╔═╡ 83a089f2-4364-4f5e-959f-b7e1e6644749
+#=╠═╡
+State(5, 2) ∈ solver_dqn.S.vals
+  ╠═╡ =#
+
+# ╔═╡ de7632bc-bfda-4972-8407-221f30943b72
+#=╠═╡
+State(-1, -1) ∈ solver_dqn.S.vals
+  ╠═╡ =#
+
+# ╔═╡ 88ca10db-fb4e-4d35-ba82-6f70014d0a11
+#=╠═╡
+solver_dqn.S.vals
+  ╠═╡ =#
 
 # ╔═╡ b42c3f77-5536-4a78-85df-c46f7f98fe79
 rand(initialstate(mdp))
@@ -1913,9 +2046,12 @@ rand(initialstate(mdp))
 srand = rand(initialstate(mdp))
 
 # ╔═╡ f5b900e6-dccb-4b4a-93ea-a80a717d65f9
+#=╠═╡
 POMDPs.convert_s(AbstractArray, State(1,1), mdp)
+  ╠═╡ =#
 
 # ╔═╡ d83d0ab3-5f33-43f6-9700-1d63eee1f36b
+#=╠═╡
 sampler = Crux.Sampler(
 	mdp, 
 	solver_dqn.agent, 
@@ -1926,12 +2062,52 @@ sampler = Crux.Sampler(
 	max_steps=solver_dqn.max_steps, 
 	required_columns=solver_dqn.required_columns
 )
+  ╠═╡ =#
 
 # ╔═╡ 6efdc038-e234-4748-8efc-ef3372916cdf
+#=╠═╡
 initial_observation(sampler.mdp, sampler.s)
+  ╠═╡ =#
+
+# ╔═╡ c371c236-c5f8-46e0-86b3-a16592b65c69
+#=╠═╡
+initial_observation(sampler.mdp, sampler.s)
+  ╠═╡ =#
+
+# ╔═╡ 6a2a16f7-ef76-4125-a452-01cfaec5212c
+#=╠═╡
+typeof(initial_observation(sampler.mdp, sampler.s))
+  ╠═╡ =#
+
+# ╔═╡ 116a84d2-4a8e-40e8-91fe-8dc65dfb12e7
+#=╠═╡
+Flux.onehot(initial_observation(sampler.mdp, sampler.s), solver_dqn.S.vals)
+  ╠═╡ =#
+
+# ╔═╡ a9fff980-9e26-4389-bdb5-2a0dbebb2cd7
+#=╠═╡
+tovec(initial_observation(sampler.mdp, sampler.s), solver_dqn.S)
+  ╠═╡ =#
 
 # ╔═╡ 1572f01a-5414-4b51-980b-9e248bb37186
+#=╠═╡
 policy_dqn = solve(solver_dqn, mdp)
+  ╠═╡ =#
+
+# ╔═╡ c15812cf-7ba9-4ac1-8590-b2025f68481d
+mdp
+
+# ╔═╡ 5775789d-9d4f-4a6b-9c08-980f762e5ed1
+S_mdp = state_space(mdp)
+
+# ╔═╡ abd3011d-a2c4-407b-9f8d-bf1b81c7c439
+A_mdp() = DiscreteNetwork(Chain(Dense(2, 32, relu), Dense(32, 4)), actions(mdp))
+
+# ╔═╡ ff85df53-b45c-4334-8722-4fd3b91c07f0
+dqn_mdp = DQN(π=A_mdp(), S=S_mdp, N=1000)
+
+# ╔═╡ d62406f2-9bf4-4aec-81cd-34c135e7e079
+pi_mdp = solve(dqn_mdp, mdp)
 
 # ╔═╡ 50ce080c-235f-425a-925d-65f1c29e7d60
 with_terminal() do
@@ -2163,6 +2339,14 @@ for (var i=0; i < headers.length; i++) {
 # ╟─8d30248e-b3c3-4f37-8296-392898790283
 # ╠═5e9b28a4-50b9-4c44-8d3c-48eb72bda3a5
 # ╠═34582cc5-e9eb-4912-9caf-b516b4b9b221
+# ╠═004510b7-64d1-47ed-b348-7161af733c01
+# ╠═00f31771-a287-47b9-8adf-40c7d23bb7ea
+# ╠═60ce9e30-6245-476b-be8d-838e29bc46f9
+# ╠═3c4e8e72-015c-4ad4-b2de-ed1bb1eacc37
+# ╠═4c0e7b16-b878-4a9f-a0cc-9448c311f015
+# ╠═594c88f5-5e84-4abf-8218-f905fbf0e922
+# ╠═e8ab064f-e58d-4006-abaa-05ebfc87df88
+# ╠═e3be07a0-191e-4180-8e8f-02a07dd08352
 # ╠═8477c27b-ea40-4c59-b1ca-da8b641eb884
 # ╠═ae71c096-311f-4da5-8a6c-3829242af1f9
 # ╠═d91bcc7c-0941-4d6c-b695-026c33f67329
@@ -2335,6 +2519,27 @@ for (var i=0; i < headers.length; i++) {
 # ╠═f5b900e6-dccb-4b4a-93ea-a80a717d65f9
 # ╠═d83d0ab3-5f33-43f6-9700-1d63eee1f36b
 # ╠═6efdc038-e234-4748-8efc-ef3372916cdf
+# ╠═73c49153-3eb1-4ac7-8cb2-be72bd3b4a78
+# ╠═0112328f-8cd9-472c-89d6-89a27c1b5740
+# ╠═581e850c-4f89-4fb7-b674-c7be1b290de3
+# ╠═c371c236-c5f8-46e0-86b3-a16592b65c69
+# ╠═bd90f02a-99f3-4596-9063-b762cc6d4288
+# ╠═793485d1-06ab-47ac-a30f-e969dbe60ff8
+# ╠═6a2a16f7-ef76-4125-a452-01cfaec5212c
+# ╠═56784563-c8bc-4b42-b0ae-d14c0bc6ef9f
+# ╠═a5587b98-311b-48f9-b921-fd9e677f693f
+# ╠═b7324c2f-7dd3-45a5-b5a0-a0f160d5b6fe
+# ╠═2806c392-2f99-4751-8cd2-f8493a0a858a
+# ╠═a8711617-3d6f-4465-bc72-ddf315bf187f
+# ╠═9840980c-fff7-492f-9e31-8ca0a355edb4
+# ╠═8a986284-5758-47a1-af46-caf1bf4c8b00
+# ╠═01268c82-d479-47b7-9ae0-220cda895776
+# ╠═677640fa-c0fd-49a3-b4d9-73a6c37b94fd
+# ╠═116a84d2-4a8e-40e8-91fe-8dc65dfb12e7
+# ╠═a9fff980-9e26-4389-bdb5-2a0dbebb2cd7
+# ╠═83a089f2-4364-4f5e-959f-b7e1e6644749
+# ╠═de7632bc-bfda-4972-8407-221f30943b72
+# ╠═88ca10db-fb4e-4d35-ba82-6f70014d0a11
 # ╠═1572f01a-5414-4b51-980b-9e248bb37186
 # ╠═279d7550-ac70-4391-85ff-859aff6260d5
 # ╠═b1c00123-0c78-43a8-8aad-0876d5bd0553
@@ -2351,6 +2556,18 @@ for (var i=0; i < headers.length; i++) {
 # ╠═a496ec2c-c833-4e28-8f2c-d03ab3bbf72e
 # ╠═93470482-a648-4189-995c-df9b85d96e8c
 # ╠═f2bea74c-9222-456c-bfa7-8ce8e8e7fb69
+# ╠═3ae03c36-877c-4be6-9ed3-37a5b7bac7f6
+# ╠═c15812cf-7ba9-4ac1-8590-b2025f68481d
+# ╠═5bc59e80-8892-4397-8952-0f11fc49441b
+# ╠═5775789d-9d4f-4a6b-9c08-980f762e5ed1
+# ╠═fecb5e93-7a12-425c-86f8-48d144040a5e
+# ╠═abd3011d-a2c4-407b-9f8d-bf1b81c7c439
+# ╠═d3dc8b0b-2cda-4a61-b7e3-fd201c85d319
+# ╠═942da32d-58f0-4057-88d8-b9077cc350e1
+# ╠═eab76a21-9f55-4a1e-b01f-fce9d441c1eb
+# ╠═ff85df53-b45c-4334-8722-4fd3b91c07f0
+# ╠═44817047-1ed9-40bd-83e8-e8a2f72963a3
+# ╠═d62406f2-9bf4-4aec-81cd-34c135e7e079
 # ╟─799026ed-92f0-439a-a7e3-bd362eb18b99
 # ╟─3484668f-9cdb-4ac9-b683-8054f0ea9d7e
 # ╟─105a8fb9-008c-4ae1-83e8-8894209ada0e
