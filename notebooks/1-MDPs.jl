@@ -282,6 +282,7 @@ Base.:(==)(s1::State, s2::State) = (s1.x == s2.x) && (s1.y == s2.y)
 	null_state::State = State(-1, -1) # terminal state outside of the grid
 	p_transition::Real = 0.7 # probability of transitioning to the correct next state
 	wind_dict::Dict{State, Tuple{Int, Float64}} = Dict(
+		State(-1, -1) => (0,0),#needed for Crux?
 		State(1,7) => (5,0),      
 		State(2,7) => (5,7*pi/4),
 		State(3,7) => (10,5*pi/3),
@@ -1210,6 +1211,16 @@ end
 # ╔═╡ d313469b-8ff8-437b-b980-3643147ffedc
 action_space(Q_network())
 
+# ╔═╡ ebeb07a9-3ce5-4bc6-a5a3-6b9cc5db13a5
+#=╠═╡
+sso = POMDPs.convert_s(AbstractArray, initialstate(mdp), mdp)
+  ╠═╡ =#
+
+# ╔═╡ 0d469af2-ee02-45f6-a0f9-fcafbf57d6b8
+#=╠═╡
+type(css)
+  ╠═╡ =#
+
 # ╔═╡ 0e1876b6-be76-4c36-879f-0874cb294d86
 # ╠═╡ disabled = true
 #=╠═╡
@@ -1218,8 +1229,43 @@ function zero(T::Type{A1}) where {A1<:typeof(State(0,0))}
 end
   ╠═╡ =#
 
+# ╔═╡ a6df6e0a-2e8f-4912-a7b8-e22595bcf867
+#=╠═╡
+css = state_space(sso)
+  ╠═╡ =#
+
+# ╔═╡ 4bc5c35c-6d54-4ae8-82d6-cfec28cb437a
+#=╠═╡
+dss = DiscreteSpace(sso)
+  ╠═╡ =#
+
+# ╔═╡ a844f1ad-73c0-4423-b0f8-c1005d7ce932
+#=╠═╡
+solver_dqn = DQN(π=Q_network(), S=dss, N=30000)
+  ╠═╡ =#
+
+# ╔═╡ 8678ffd0-9b3e-4d9a-bdc2-51488db4fe99
+#=╠═╡
+solver_dqn.S
+  ╠═╡ =#
+
 # ╔═╡ ffba0c02-b49b-44ec-8e26-fbe0aba98fbe
 State(0, 0)
+
+# ╔═╡ 6798fa98-b54e-4025-ba55-c456ffe6c038
+#=╠═╡
+solver_dqn.S.vals
+  ╠═╡ =#
+
+# ╔═╡ 65cc321c-85e4-47a7-9ba8-9c943dcf4426
+#=╠═╡
+State(4, 5) in solver_dqn.S.vals
+  ╠═╡ =#
+
+# ╔═╡ 33eae184-86bd-4b0f-9547-7f5ba327a32e
+#=╠═╡
+Flux.onehot(State(1,1), solver_dqn.S.vals)
+  ╠═╡ =#
 
 # ╔═╡ 2009c8c9-bae0-40e3-a1be-7ec4e9a09d4d
 # ╠═╡ disabled = true
@@ -1235,8 +1281,62 @@ function convert_s(T::Type{A1}, s::State, problem::MDP) where {A1<:AbstractArray
 end
   ╠═╡ =#
 
+# ╔═╡ f5b900e6-dccb-4b4a-93ea-a80a717d65f9
+#=╠═╡
+POMDPs.convert_s(AbstractArray, State(1,1), mdp)
+  ╠═╡ =#
+
+# ╔═╡ d83d0ab3-5f33-43f6-9700-1d63eee1f36b
+#=╠═╡
+sampler = Crux.Sampler(
+	mdp, 
+	solver_dqn.agent, 
+	s=srand,
+	S=solver_dqn.S, 
+	#svec = Flux.onehot(State(1,1), solver_dqn.S.vals),
+	svec=Crux.tovec(srand, dss),
+	max_steps=solver_dqn.max_steps, 
+	required_columns=solver_dqn.required_columns
+)
+  ╠═╡ =#
+
+# ╔═╡ 6efdc038-e234-4748-8efc-ef3372916cdf
+#=╠═╡
+initial_observation(sampler.mdp, sampler.s)
+  ╠═╡ =#
+
+# ╔═╡ 73c49153-3eb1-4ac7-8cb2-be72bd3b4a78
+#=╠═╡
+solver_dqn.N
+  ╠═╡ =#
+
+# ╔═╡ 0112328f-8cd9-472c-89d6-89a27c1b5740
+#=╠═╡
+solver_dqn.ΔN
+  ╠═╡ =#
+
+# ╔═╡ 581e850c-4f89-4fb7-b674-c7be1b290de3
+#=╠═╡
+solver_dqn.i
+  ╠═╡ =#
+
+# ╔═╡ c371c236-c5f8-46e0-86b3-a16592b65c69
+#=╠═╡
+initial_observation(sampler.mdp, sampler.s)
+  ╠═╡ =#
+
+# ╔═╡ bd90f02a-99f3-4596-9063-b762cc6d4288
+#=╠═╡
+OneHotArrays.onehot(State(-1, -1), solver_dqn.S.vals)
+  ╠═╡ =#
+
 # ╔═╡ 793485d1-06ab-47ac-a30f-e969dbe60ff8
 typeof(State(-1, -1))
+
+# ╔═╡ 6a2a16f7-ef76-4125-a452-01cfaec5212c
+#=╠═╡
+typeof(initial_observation(sampler.mdp, sampler.s))
+  ╠═╡ =#
 
 # ╔═╡ 56784563-c8bc-4b42-b0ae-d14c0bc6ef9f
 sgg = POMDPModels.SimpleGridWorld()
@@ -1265,6 +1365,36 @@ S_gwmdp_dqn = DQN(π=A_gwmdp(), S=state_space(gmdp), N=10000, interaction_storea
 # ╔═╡ 677640fa-c0fd-49a3-b4d9-73a6c37b94fd
 DiscreteSpace(5)
 
+# ╔═╡ 116a84d2-4a8e-40e8-91fe-8dc65dfb12e7
+#=╠═╡
+Flux.onehot(initial_observation(sampler.mdp, sampler.s), solver_dqn.S.vals)
+  ╠═╡ =#
+
+# ╔═╡ a9fff980-9e26-4389-bdb5-2a0dbebb2cd7
+#=╠═╡
+tovec(initial_observation(sampler.mdp, sampler.s), solver_dqn.S)
+  ╠═╡ =#
+
+# ╔═╡ 83a089f2-4364-4f5e-959f-b7e1e6644749
+#=╠═╡
+State(5, 2) ∈ solver_dqn.S.vals
+  ╠═╡ =#
+
+# ╔═╡ de7632bc-bfda-4972-8407-221f30943b72
+#=╠═╡
+State(-1, -1) ∈ solver_dqn.S.vals
+  ╠═╡ =#
+
+# ╔═╡ 88ca10db-fb4e-4d35-ba82-6f70014d0a11
+#=╠═╡
+solver_dqn.S.vals
+  ╠═╡ =#
+
+# ╔═╡ 1572f01a-5414-4b51-980b-9e248bb37186
+#=╠═╡
+policy_dqn = solve(solver_dqn, mdp)
+  ╠═╡ =#
+
 # ╔═╡ 279d7550-ac70-4391-85ff-859aff6260d5
 π = Q_network()
 
@@ -1287,6 +1417,11 @@ target_fn = Crux.DQN_target
 # ╠═╡ disabled = true
 #=╠═╡
 zero(type(css))
+  ╠═╡ =#
+
+# ╔═╡ 9eee0130-13dd-42e4-ab63-80cd93f7b49b
+#=╠═╡
+dim(css)
   ╠═╡ =#
 
 # ╔═╡ e8cc0f99-f846-4612-b6ba-00510d1e19ec
@@ -1954,145 +2089,11 @@ ssamp = rand(initialstate(mdp))
 # ╔═╡ 4a7a3aec-848b-4400-9669-5271ab5bbb4e
 (AbstractArray, rand(initialstate(mdp)), mdp)
 
-# ╔═╡ ebeb07a9-3ce5-4bc6-a5a3-6b9cc5db13a5
-#=╠═╡
-sso = POMDPs.convert_s(AbstractArray, initialstate(mdp), mdp)
-  ╠═╡ =#
-
-# ╔═╡ a6df6e0a-2e8f-4912-a7b8-e22595bcf867
-#=╠═╡
-css = state_space(sso)
-  ╠═╡ =#
-
-# ╔═╡ 0d469af2-ee02-45f6-a0f9-fcafbf57d6b8
-#=╠═╡
-type(css)
-  ╠═╡ =#
-
-# ╔═╡ 9eee0130-13dd-42e4-ab63-80cd93f7b49b
-#=╠═╡
-dim(css)
-  ╠═╡ =#
-
-# ╔═╡ 4bc5c35c-6d54-4ae8-82d6-cfec28cb437a
-#=╠═╡
-dss = DiscreteSpace(sso)
-  ╠═╡ =#
-
-# ╔═╡ a844f1ad-73c0-4423-b0f8-c1005d7ce932
-#=╠═╡
-solver_dqn = DQN(π=Q_network(), S=dss, N=30000)
-  ╠═╡ =#
-
-# ╔═╡ 8678ffd0-9b3e-4d9a-bdc2-51488db4fe99
-#=╠═╡
-solver_dqn.S
-  ╠═╡ =#
-
-# ╔═╡ 6798fa98-b54e-4025-ba55-c456ffe6c038
-#=╠═╡
-solver_dqn.S.vals
-  ╠═╡ =#
-
-# ╔═╡ 65cc321c-85e4-47a7-9ba8-9c943dcf4426
-#=╠═╡
-State(4, 5) in solver_dqn.S.vals
-  ╠═╡ =#
-
-# ╔═╡ 33eae184-86bd-4b0f-9547-7f5ba327a32e
-#=╠═╡
-Flux.onehot(State(1,1), solver_dqn.S.vals)
-  ╠═╡ =#
-
-# ╔═╡ 73c49153-3eb1-4ac7-8cb2-be72bd3b4a78
-#=╠═╡
-solver_dqn.N
-  ╠═╡ =#
-
-# ╔═╡ 0112328f-8cd9-472c-89d6-89a27c1b5740
-#=╠═╡
-solver_dqn.ΔN
-  ╠═╡ =#
-
-# ╔═╡ 581e850c-4f89-4fb7-b674-c7be1b290de3
-#=╠═╡
-solver_dqn.i
-  ╠═╡ =#
-
-# ╔═╡ bd90f02a-99f3-4596-9063-b762cc6d4288
-#=╠═╡
-OneHotArrays.onehot(State(-1, -1), solver_dqn.S.vals)
-  ╠═╡ =#
-
-# ╔═╡ 83a089f2-4364-4f5e-959f-b7e1e6644749
-#=╠═╡
-State(5, 2) ∈ solver_dqn.S.vals
-  ╠═╡ =#
-
-# ╔═╡ de7632bc-bfda-4972-8407-221f30943b72
-#=╠═╡
-State(-1, -1) ∈ solver_dqn.S.vals
-  ╠═╡ =#
-
-# ╔═╡ 88ca10db-fb4e-4d35-ba82-6f70014d0a11
-#=╠═╡
-solver_dqn.S.vals
-  ╠═╡ =#
-
 # ╔═╡ b42c3f77-5536-4a78-85df-c46f7f98fe79
 rand(initialstate(mdp))
 
 # ╔═╡ f1491b8b-b27a-49ac-b7fa-64e9d33a3307
 srand = rand(initialstate(mdp))
-
-# ╔═╡ f5b900e6-dccb-4b4a-93ea-a80a717d65f9
-#=╠═╡
-POMDPs.convert_s(AbstractArray, State(1,1), mdp)
-  ╠═╡ =#
-
-# ╔═╡ d83d0ab3-5f33-43f6-9700-1d63eee1f36b
-#=╠═╡
-sampler = Crux.Sampler(
-	mdp, 
-	solver_dqn.agent, 
-	s=srand,
-	S=solver_dqn.S, 
-	#svec = Flux.onehot(State(1,1), solver_dqn.S.vals),
-	svec=Crux.tovec(srand, dss),
-	max_steps=solver_dqn.max_steps, 
-	required_columns=solver_dqn.required_columns
-)
-  ╠═╡ =#
-
-# ╔═╡ 6efdc038-e234-4748-8efc-ef3372916cdf
-#=╠═╡
-initial_observation(sampler.mdp, sampler.s)
-  ╠═╡ =#
-
-# ╔═╡ c371c236-c5f8-46e0-86b3-a16592b65c69
-#=╠═╡
-initial_observation(sampler.mdp, sampler.s)
-  ╠═╡ =#
-
-# ╔═╡ 6a2a16f7-ef76-4125-a452-01cfaec5212c
-#=╠═╡
-typeof(initial_observation(sampler.mdp, sampler.s))
-  ╠═╡ =#
-
-# ╔═╡ 116a84d2-4a8e-40e8-91fe-8dc65dfb12e7
-#=╠═╡
-Flux.onehot(initial_observation(sampler.mdp, sampler.s), solver_dqn.S.vals)
-  ╠═╡ =#
-
-# ╔═╡ a9fff980-9e26-4389-bdb5-2a0dbebb2cd7
-#=╠═╡
-tovec(initial_observation(sampler.mdp, sampler.s), solver_dqn.S)
-  ╠═╡ =#
-
-# ╔═╡ 1572f01a-5414-4b51-980b-9e248bb37186
-#=╠═╡
-policy_dqn = solve(solver_dqn, mdp)
-  ╠═╡ =#
 
 # ╔═╡ c15812cf-7ba9-4ac1-8590-b2025f68481d
 mdp
@@ -2106,8 +2107,44 @@ A_mdp() = DiscreteNetwork(Chain(Dense(2, 32, relu), Dense(32, 4)), actions(mdp))
 # ╔═╡ ff85df53-b45c-4334-8722-4fd3b91c07f0
 dqn_mdp = DQN(π=A_mdp(), S=S_mdp, N=1000)
 
-# ╔═╡ d62406f2-9bf4-4aec-81cd-34c135e7e079
+# ╔═╡ 4efca3d3-d8f9-45f5-8eaf-c29b79cd6ab1
+D = buffer_like(dqn_mdp.buffer, capacity=dqn_mdp.c_opt.batch_size, device=device(dqn_mdp.agent.π))
+
+# ╔═╡ 7289c3ea-c47d-438d-b4bb-8bac0681d0e4
+max(0, dqn_mdp.buffer_init - length(dqn_mdp.buffer))
+
+# ╔═╡ b164f6a3-a052-4393-b646-0666436cd315
+dqn_mdp.log
+
+# ╔═╡ b34618f6-8a30-41d4-bae1-aac2ede1cb30
+isnothing(dqn_mdp.a_opt)
+
+# ╔═╡ bfd6313d-419d-4fdd-8a10-003ad6b2550c
 pi_mdp = solve(dqn_mdp, mdp)
+
+# ╔═╡ d2b8948b-c923-4812-b729-50f535782013
+γ_2=Float32(discount(mdp))
+
+# ╔═╡ fb9bcfb2-cf06-4f4f-abf6-0ac97d675883
+s_solve = Sampler(mdp, dqn_mdp.agent, S=dqn_mdp.S, max_steps=dqn_mdp.max_steps, required_columns=extra_columns(dqn_mdp.buffer))
+
+# ╔═╡ 08dcba85-27c8-4c59-9219-3cf498754553
+isnothing(dqn_mdp.log.sampler) && (dqn_mdp.log.sampler = s_solve)
+
+# ╔═╡ d96ae1e8-0638-441c-8c1f-1fd39be6611d
+for dqn_mdp.i in range(dqn_mdp.i, stop=dqn_mdp.i + dqn_mdp.N - dqn_mdp.ΔN)
+	info = Dict()
+	steps!(s_solve, dqn_mdp.buffer, Nsteps=dqn_mdp.ΔN, explore=true, i=dqn_mdp.i, store=dqn_mdp.interaction_storage, cb=(D)->dqn_mdp.post_sample_callback(D, 𝒮=dqn_mdp, info=info))
+	dqn_mdp.pre_train_callback(dqn_mdp, info=info)
+
+	training_info = Crux.value_training(dqn_mdp, D, γ_2)
+end
+
+# ╔═╡ 8a0e5ddf-bbb3-420f-8abe-85a70f7bb284
+data_steps = mdp_data(s_solve.S, s_solve.agent.space, dqn_mdp.ΔN, s_solve.required_columns)
+
+# ╔═╡ 93541691-95b9-4b47-8404-2e506fe87f03
+Crux.step!(data_steps, 1, s_solve, explore=true, i=dqn_mdp.i)
 
 # ╔═╡ 50ce080c-235f-425a-925d-65f1c29e7d60
 with_terminal() do
@@ -2567,7 +2604,17 @@ for (var i=0; i < headers.length; i++) {
 # ╠═eab76a21-9f55-4a1e-b01f-fce9d441c1eb
 # ╠═ff85df53-b45c-4334-8722-4fd3b91c07f0
 # ╠═44817047-1ed9-40bd-83e8-e8a2f72963a3
-# ╠═d62406f2-9bf4-4aec-81cd-34c135e7e079
+# ╠═bfd6313d-419d-4fdd-8a10-003ad6b2550c
+# ╠═4efca3d3-d8f9-45f5-8eaf-c29b79cd6ab1
+# ╠═d2b8948b-c923-4812-b729-50f535782013
+# ╠═fb9bcfb2-cf06-4f4f-abf6-0ac97d675883
+# ╠═08dcba85-27c8-4c59-9219-3cf498754553
+# ╠═7289c3ea-c47d-438d-b4bb-8bac0681d0e4
+# ╠═b164f6a3-a052-4393-b646-0666436cd315
+# ╠═b34618f6-8a30-41d4-bae1-aac2ede1cb30
+# ╠═d96ae1e8-0638-441c-8c1f-1fd39be6611d
+# ╠═8a0e5ddf-bbb3-420f-8abe-85a70f7bb284
+# ╠═93541691-95b9-4b47-8404-2e506fe87f03
 # ╟─799026ed-92f0-439a-a7e3-bd362eb18b99
 # ╟─3484668f-9cdb-4ac9-b683-8054f0ea9d7e
 # ╟─105a8fb9-008c-4ae1-83e8-8894209ada0e
