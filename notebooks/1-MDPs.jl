@@ -1467,7 +1467,7 @@ S_dm = state_space(discrete_mdp)
 A_dm() = DiscreteNetwork(Chain(Dense(2, 32, relu), Dense(32, 4)), actions(discrete_mdp))
 
 # ╔═╡ d3dc8b0b-2cda-4a61-b7e3-fd201c85d319
-dqn_dm = DQN(π=A_dm(), S=S_dm, N=100)
+dqn_dm = DQN(π=A_dm(), S=S_dm, N=100000)
 
 # ╔═╡ 942da32d-58f0-4057-88d8-b9077cc350e1
 typeof(S_dm)
@@ -1477,6 +1477,9 @@ zero(Tuple{Int64})
 
 # ╔═╡ 44817047-1ed9-40bd-83e8-e8a2f72963a3
 pi_dm = solve(dqn_dm, discrete_mdp)
+
+# ╔═╡ f85ee7b1-13df-42a3-a5f7-cc310552010a
+
 
 # ╔═╡ 799026ed-92f0-439a-a7e3-bd362eb18b99
 md"""
@@ -2102,13 +2105,28 @@ mdp
 S_mdp = state_space(mdp)
 
 # ╔═╡ abd3011d-a2c4-407b-9f8d-bf1b81c7c439
-A_mdp() = DiscreteNetwork(Chain(Dense(2, 32, relu), Dense(32, 4)), actions(mdp))
+A_mdp() = DiscreteNetwork(Chain(Dense(2, 32, relu), Dense(32, 8)), actions(mdp))
 
 # ╔═╡ ff85df53-b45c-4334-8722-4fd3b91c07f0
-dqn_mdp = DQN(π=A_mdp(), S=S_mdp, N=1000)
+dqn_mdp = DQN(π=A_mdp(), S=S_mdp, N=1000000)
+
+# ╔═╡ 3e4d8886-6c4d-4a13-8841-e73c71a6baaf
+plot_learning([dqn_mdp],
+	title="DQN Learning Curve",
+	labels=["DQN"],
+	legend=:right)
 
 # ╔═╡ 4efca3d3-d8f9-45f5-8eaf-c29b79cd6ab1
 D = buffer_like(dqn_mdp.buffer, capacity=dqn_mdp.c_opt.batch_size, device=device(dqn_mdp.agent.π))
+
+# ╔═╡ f9d49125-4686-4c4d-a3e5-c970edc6d347
+D[:s]
+
+# ╔═╡ 04783632-cab7-4e63-9e96-293830a36e1b
+D[:a]
+
+# ╔═╡ 05821112-e30a-427a-8d68-8fc4283832ea
+D
 
 # ╔═╡ 7289c3ea-c47d-438d-b4bb-8bac0681d0e4
 max(0, dqn_mdp.buffer_init - length(dqn_mdp.buffer))
@@ -2119,11 +2137,37 @@ dqn_mdp.log
 # ╔═╡ b34618f6-8a30-41d4-bae1-aac2ede1cb30
 isnothing(dqn_mdp.a_opt)
 
+# ╔═╡ 0a88e3e8-bdea-4fde-9b22-a45fd590dbfa
+dqn_mdp.agent.π
+
+# ╔═╡ b666fe9b-f3c0-47f4-b801-5bef0ed72956
+critic(dqn_mdp.agent.π)
+
+# ╔═╡ c42fbe8d-415d-487b-af6b-7337b9855187
+begin
+	Q_2 = value(dqn_mdp.agent.π, D[:s], D[:a])
+end
+
+# ╔═╡ ec1dcd22-f6bc-4c30-b516-da6e48a07bd9
+sum(value(dqn_mdp.agent.π, D[:s]) .* D[:a], dims=1)
+
+# ╔═╡ 3844480d-5a06-4333-9147-f8818c05210f
+value(dqn_mdp.agent.π, D[:s])
+
+# ╔═╡ 2176c0c6-abd9-4ab9-8a54-069eb96bdf4b
+dqn_mdp.buffer
+
+# ╔═╡ e74d43c9-e6d9-4252-964a-743d92fcb75f
+dqn_mdp.agent.π
+
 # ╔═╡ bfd6313d-419d-4fdd-8a10-003ad6b2550c
 pi_mdp = solve(dqn_mdp, mdp)
 
 # ╔═╡ d2b8948b-c923-4812-b729-50f535782013
 γ_2=Float32(discount(mdp))
+
+# ╔═╡ 6d8e4629-5122-4d19-a4ec-a4a7cf8ba8cc
+dqn_mdp.c_opt.loss(dqn_mdp.agent.π, dqn_mdp.𝒫, D, γ_2; info=info)
 
 # ╔═╡ fb9bcfb2-cf06-4f4f-abf6-0ac97d675883
 s_solve = Sampler(mdp, dqn_mdp.agent, S=dqn_mdp.S, max_steps=dqn_mdp.max_steps, required_columns=extra_columns(dqn_mdp.buffer))
@@ -2137,7 +2181,25 @@ for dqn_mdp.i in range(dqn_mdp.i, stop=dqn_mdp.i + dqn_mdp.N - dqn_mdp.ΔN)
 	steps!(s_solve, dqn_mdp.buffer, Nsteps=dqn_mdp.ΔN, explore=true, i=dqn_mdp.i, store=dqn_mdp.interaction_storage, cb=(D)->dqn_mdp.post_sample_callback(D, 𝒮=dqn_mdp, info=info))
 	dqn_mdp.pre_train_callback(dqn_mdp, info=info)
 
-	training_info = Crux.value_training(dqn_mdp, D, γ_2)
+	#training_info = Crux.value_training(dqn_mdp, D, γ_2)
+	infos = []
+	for epoch in dqn_mdp.c_opt.epochs
+		rand!(D, dqn_mdp.buffer, dqn_mdp.extra_buffers..., fracs=dqn_mdp.buffer_fractions, i=dqn_mdp.i)
+
+		info = Dict()
+
+		dqn_mdp.post_batch_callback(D, 𝒮=dqn_mdp, info=info)
+		y = dqn_mdp.target_fn(dqn_mdp.agent.π⁻, dqn_mdp.𝒫, D, γ_2, i=dqn_mdp.i)
+		isprioritized(dqn_mdp.buffer) && update_priorities!(dqn_mdp.buffer, D.incices, cpu(dqn_mdp.priority_fn(dqn_mdp.agent.π, dqn_mdp.𝒫, D, γ_2)))
+		for (Θs, p_opt) in dqn_mdp.param_optimizers
+			train!(Θs, (;kwargs...) -> p_opt.loss(dqn_mdp.agent.π, dqn_mdp.𝒫, D, kwargs...), p_opt, info-info)
+		end
+		if ((epoch-1) % dqn_mdp.c_opt.update_every) == 0
+			#Crux.train!(critic(dqn_mdp.agent.π), (;kwargs...) -> dqn_mdp.c_opt.loss(dqn_mdp.agent.π, dqn_mdp.𝒫, D, γ_2; kwargs...), dqn_mdp.c_opt, info=info)
+			l, back = Flux.pullback(() -> dqn_mdp.c_opt.loss(dqn_mdp.agent.π, dqn_mdp.𝒫, D, γ_2; info=info), Flux.params(critic(dqn_mdp.agent.π)))
+		end
+		
+	end
 end
 
 # ╔═╡ 8a0e5ddf-bbb3-420f-8abe-85a70f7bb284
@@ -2605,7 +2667,9 @@ for (var i=0; i < headers.length; i++) {
 # ╠═ff85df53-b45c-4334-8722-4fd3b91c07f0
 # ╠═44817047-1ed9-40bd-83e8-e8a2f72963a3
 # ╠═bfd6313d-419d-4fdd-8a10-003ad6b2550c
+# ╠═3e4d8886-6c4d-4a13-8841-e73c71a6baaf
 # ╠═4efca3d3-d8f9-45f5-8eaf-c29b79cd6ab1
+# ╠═f85ee7b1-13df-42a3-a5f7-cc310552010a
 # ╠═d2b8948b-c923-4812-b729-50f535782013
 # ╠═fb9bcfb2-cf06-4f4f-abf6-0ac97d675883
 # ╠═08dcba85-27c8-4c59-9219-3cf498754553
@@ -2613,6 +2677,17 @@ for (var i=0; i < headers.length; i++) {
 # ╠═b164f6a3-a052-4393-b646-0666436cd315
 # ╠═b34618f6-8a30-41d4-bae1-aac2ede1cb30
 # ╠═d96ae1e8-0638-441c-8c1f-1fd39be6611d
+# ╠═0a88e3e8-bdea-4fde-9b22-a45fd590dbfa
+# ╠═b666fe9b-f3c0-47f4-b801-5bef0ed72956
+# ╠═6d8e4629-5122-4d19-a4ec-a4a7cf8ba8cc
+# ╠═c42fbe8d-415d-487b-af6b-7337b9855187
+# ╠═ec1dcd22-f6bc-4c30-b516-da6e48a07bd9
+# ╠═3844480d-5a06-4333-9147-f8818c05210f
+# ╠═2176c0c6-abd9-4ab9-8a54-069eb96bdf4b
+# ╠═e74d43c9-e6d9-4252-964a-743d92fcb75f
+# ╠═f9d49125-4686-4c4d-a3e5-c970edc6d347
+# ╠═04783632-cab7-4e63-9e96-293830a36e1b
+# ╠═05821112-e30a-427a-8d68-8fc4283832ea
 # ╠═8a0e5ddf-bbb3-420f-8abe-85a70f7bb284
 # ╠═93541691-95b9-4b47-8404-2e506fe87f03
 # ╟─799026ed-92f0-439a-a7e3-bd362eb18b99
