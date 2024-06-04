@@ -1348,7 +1348,10 @@ state_space(sgg)
 solver_dqn_sgg = DQN(π=Q_network(), S=state_space(sgg), N=30000)
 
 # ╔═╡ 2806c392-2f99-4751-8cd2-f8493a0a858a
+# ╠═╡ disabled = true
+#=╠═╡
 policy_sgg = solve(solver_dqn_sgg, sgg)
+  ╠═╡ =#
 
 # ╔═╡ a8711617-3d6f-4465-bc72-ddf315bf187f
 
@@ -1360,7 +1363,10 @@ gmdp = GridWorldMDP()
 A_gwmdp() = DiscreteNetwork(Chain(Dense(Crux.dim(state_space(gmdp))..., 64, relu), Dense(64, 64, relu), Dense(64, length(actions(gmdp)))), actions(gmdp))
 
 # ╔═╡ 01268c82-d479-47b7-9ae0-220cda895776
+# ╠═╡ disabled = true
+#=╠═╡
 S_gwmdp_dqn = DQN(π=A_gwmdp(), S=state_space(gmdp), N=10000, interaction_storeage=[])
+  ╠═╡ =#
 
 # ╔═╡ 677640fa-c0fd-49a3-b4d9-73a6c37b94fd
 DiscreteSpace(5)
@@ -1466,20 +1472,71 @@ S_dm = state_space(discrete_mdp)
 # ╔═╡ fecb5e93-7a12-425c-86f8-48d144040a5e
 A_dm() = DiscreteNetwork(Chain(Dense(2, 32, relu), Dense(32, 4)), actions(discrete_mdp))
 
+# ╔═╡ e1df43c7-1f3d-42b4-909c-a1c2b05381e3
+𝒜
+
 # ╔═╡ d3dc8b0b-2cda-4a61-b7e3-fd201c85d319
-dqn_dm = DQN(π=A_dm(), S=S_dm, N=100000)
+# ╠═╡ disabled = true
+#=╠═╡
+dqn_dm = DQN(π=A_dm(), S=S_dm, N=30000)#NOT OUR MDP!!!
+  ╠═╡ =#
 
 # ╔═╡ 942da32d-58f0-4057-88d8-b9077cc350e1
 typeof(S_dm)
 
 # ╔═╡ eab76a21-9f55-4a1e-b01f-fce9d441c1eb
+# ╠═╡ disabled = true
+#=╠═╡
 zero(Tuple{Int64})
+  ╠═╡ =#
 
 # ╔═╡ 44817047-1ed9-40bd-83e8-e8a2f72963a3
+# ╠═╡ disabled = true
+#=╠═╡
 pi_dm = solve(dqn_dm, discrete_mdp)
+  ╠═╡ =#
+
+# ╔═╡ 9224816f-b347-4aef-8d70-44a3800b636e
+
 
 # ╔═╡ f85ee7b1-13df-42a3-a5f7-cc310552010a
 
+
+# ╔═╡ d96ae1e8-0638-441c-8c1f-1fd39be6611d
+# ╠═╡ disabled = true
+#=╠═╡
+for dqn_mdp.i in range(dqn_mdp.i, stop=dqn_mdp.i + dqn_mdp.N - dqn_mdp.ΔN)
+	info = Dict()
+	steps!(s_solve, dqn_mdp.buffer, Nsteps=dqn_mdp.ΔN, explore=true, i=dqn_mdp.i, store=dqn_mdp.interaction_storage, cb=(D)->dqn_mdp.post_sample_callback(D, 𝒮=dqn_mdp, info=info))
+	dqn_mdp.pre_train_callback(dqn_mdp, info=info)
+
+	#training_info = Crux.value_training(dqn_mdp, D, γ_2)
+	infos = []
+	for epoch in dqn_mdp.c_opt.epochs
+		rand!(D, dqn_mdp.buffer, dqn_mdp.extra_buffers..., fracs=dqn_mdp.buffer_fractions, i=dqn_mdp.i)
+
+		info = Dict()
+
+		dqn_mdp.post_batch_callback(D, 𝒮=dqn_mdp, info=info)
+		y = dqn_mdp.target_fn(dqn_mdp.agent.π⁻, dqn_mdp.𝒫, D, γ_2, i=dqn_mdp.i)
+		isprioritized(dqn_mdp.buffer) && update_priorities!(dqn_mdp.buffer, D.incices, cpu(dqn_mdp.priority_fn(dqn_mdp.agent.π, dqn_mdp.𝒫, D, γ_2)))
+		for (Θs, p_opt) in dqn_mdp.param_optimizers
+			train!(Θs, (;kwargs...) -> p_opt.loss(dqn_mdp.agent.π, dqn_mdp.𝒫, D, kwargs...), p_opt, info-info)
+		end
+		if ((epoch-1) % dqn_mdp.c_opt.update_every) == 0
+			#Crux.train!(critic(dqn_mdp.agent.π), (;kwargs...) -> dqn_mdp.c_opt.loss(dqn_mdp.agent.π, dqn_mdp.𝒫, D, γ_2; kwargs...), dqn_mdp.c_opt, info=info)
+			l, back = Flux.pullback(() -> dqn_mdp.c_opt.loss(dqn_mdp.agent.π, dqn_mdp.𝒫, D, γ_2; info=info), Flux.params(critic(dqn_mdp.agent.π)))
+		end
+		
+	end
+end
+  ╠═╡ =#
+
+# ╔═╡ 6d8e4629-5122-4d19-a4ec-a4a7cf8ba8cc
+# ╠═╡ disabled = true
+#=╠═╡
+dqn_mdp.c_opt.loss(dqn_mdp.agent.π, dqn_mdp.𝒫, D, γ_2; info=info)
+  ╠═╡ =#
 
 # ╔═╡ 799026ed-92f0-439a-a7e3-bd362eb18b99
 md"""
@@ -1964,6 +2021,13 @@ function plot_grid_world(mdp::MDP,
     (xmax, ymax) = params.size
     Uxy = reshape(U, xmax, ymax)
 
+	print(typeof(Uxy[1]))
+	if Uxy[1] isa Vector{Float32} #Matrix{Float64}
+		#findmax(values(mdp, pi_mdp)[49])[1]
+		Uxy = map(el -> findmax(el)[1], Uxy)
+	end
+	print(typeof(Uxy[1]))
+
 
     # plot values (i.e the U matrix)
     fig = heatmap(Uxy',
@@ -2061,6 +2125,9 @@ aᵣ = action(policy, sᵣ)
 
 # ╔═╡ 8e3c5337-951e-495c-a0e7-b050660d0192
 value(policy, sᵣ)
+
+# ╔═╡ 31116b95-3c7c-455e-8743-87b4b1988e62
+typeof(policy)
 
 # ╔═╡ 7ee1a2f0-0210-4e89-98e5-73f18fb178b1
 begin
@@ -2160,47 +2227,41 @@ dqn_mdp.buffer
 # ╔═╡ e74d43c9-e6d9-4252-964a-743d92fcb75f
 dqn_mdp.agent.π
 
+# ╔═╡ bd59750e-77dd-4f4c-95cc-062524c96a61
+actions(mdp)
+
 # ╔═╡ bfd6313d-419d-4fdd-8a10-003ad6b2550c
 pi_mdp = solve(dqn_mdp, mdp)
 
+# ╔═╡ 844d62ef-1533-456b-ab15-46b3aafcbc91
+action(pi_mdp, State(5, 3))
+
+# ╔═╡ a104402f-27fb-4286-8108-e5e50e2fe49d
+value(pi_mdp, State(2, 2))
+
+# ╔═╡ 5409a4cd-8e86-4f64-b76d-42f3665ea7bf
+value(pi_mdp, State(2, 2))[2]
+
+# ╔═╡ 1eb8d0cb-8beb-4fde-bff0-df6b56b93900
+typeof(pi_mdp)
+
+# ╔═╡ 1f57f6bd-faaa-444c-9e72-8d05de70c9de
+values(mdp, policy)
+
+# ╔═╡ 00d91925-4942-4d53-8a23-c4800c051ea1
+values(mdp, pi_mdp)
+
+# ╔═╡ 50b9112c-a597-4e2b-86e0-70c6f2309a59
+findmax(values(mdp, pi_mdp)[49])[1]
+
 # ╔═╡ d2b8948b-c923-4812-b729-50f535782013
 γ_2=Float32(discount(mdp))
-
-# ╔═╡ 6d8e4629-5122-4d19-a4ec-a4a7cf8ba8cc
-dqn_mdp.c_opt.loss(dqn_mdp.agent.π, dqn_mdp.𝒫, D, γ_2; info=info)
 
 # ╔═╡ fb9bcfb2-cf06-4f4f-abf6-0ac97d675883
 s_solve = Sampler(mdp, dqn_mdp.agent, S=dqn_mdp.S, max_steps=dqn_mdp.max_steps, required_columns=extra_columns(dqn_mdp.buffer))
 
 # ╔═╡ 08dcba85-27c8-4c59-9219-3cf498754553
 isnothing(dqn_mdp.log.sampler) && (dqn_mdp.log.sampler = s_solve)
-
-# ╔═╡ d96ae1e8-0638-441c-8c1f-1fd39be6611d
-for dqn_mdp.i in range(dqn_mdp.i, stop=dqn_mdp.i + dqn_mdp.N - dqn_mdp.ΔN)
-	info = Dict()
-	steps!(s_solve, dqn_mdp.buffer, Nsteps=dqn_mdp.ΔN, explore=true, i=dqn_mdp.i, store=dqn_mdp.interaction_storage, cb=(D)->dqn_mdp.post_sample_callback(D, 𝒮=dqn_mdp, info=info))
-	dqn_mdp.pre_train_callback(dqn_mdp, info=info)
-
-	#training_info = Crux.value_training(dqn_mdp, D, γ_2)
-	infos = []
-	for epoch in dqn_mdp.c_opt.epochs
-		rand!(D, dqn_mdp.buffer, dqn_mdp.extra_buffers..., fracs=dqn_mdp.buffer_fractions, i=dqn_mdp.i)
-
-		info = Dict()
-
-		dqn_mdp.post_batch_callback(D, 𝒮=dqn_mdp, info=info)
-		y = dqn_mdp.target_fn(dqn_mdp.agent.π⁻, dqn_mdp.𝒫, D, γ_2, i=dqn_mdp.i)
-		isprioritized(dqn_mdp.buffer) && update_priorities!(dqn_mdp.buffer, D.incices, cpu(dqn_mdp.priority_fn(dqn_mdp.agent.π, dqn_mdp.𝒫, D, γ_2)))
-		for (Θs, p_opt) in dqn_mdp.param_optimizers
-			train!(Θs, (;kwargs...) -> p_opt.loss(dqn_mdp.agent.π, dqn_mdp.𝒫, D, kwargs...), p_opt, info-info)
-		end
-		if ((epoch-1) % dqn_mdp.c_opt.update_every) == 0
-			#Crux.train!(critic(dqn_mdp.agent.π), (;kwargs...) -> dqn_mdp.c_opt.loss(dqn_mdp.agent.π, dqn_mdp.𝒫, D, γ_2; kwargs...), dqn_mdp.c_opt, info=info)
-			l, back = Flux.pullback(() -> dqn_mdp.c_opt.loss(dqn_mdp.agent.π, dqn_mdp.𝒫, D, γ_2; info=info), Flux.params(critic(dqn_mdp.agent.π)))
-		end
-		
-	end
-end
 
 # ╔═╡ 8a0e5ddf-bbb3-420f-8abe-85a70f7bb284
 data_steps = mdp_data(s_solve.S, s_solve.agent.space, dqn_mdp.ΔN, s_solve.required_columns)
@@ -2343,6 +2404,9 @@ render(mdp, q_learning_policy, n_episodes_q, γ)
 
 # ╔═╡ fb0a10c6-ca0b-480c-93d6-09aac5cc96ed
 render(mdp, sarsa_policy, n_episodes_sarsa, γ)
+
+# ╔═╡ 54c013b4-6f96-4aa8-bd94-afed96b381b3
+render(mdp, pi_mdp, 400000, γ; outline=true)
 
 # ╔═╡ caad8138-251b-4644-9217-3e3bba49e357
 render(mdp, policy; outline_state=steps[t].s, outline=false)
@@ -2661,6 +2725,8 @@ for (var i=0; i < headers.length; i++) {
 # ╠═5775789d-9d4f-4a6b-9c08-980f762e5ed1
 # ╠═fecb5e93-7a12-425c-86f8-48d144040a5e
 # ╠═abd3011d-a2c4-407b-9f8d-bf1b81c7c439
+# ╠═bd59750e-77dd-4f4c-95cc-062524c96a61
+# ╠═e1df43c7-1f3d-42b4-909c-a1c2b05381e3
 # ╠═d3dc8b0b-2cda-4a61-b7e3-fd201c85d319
 # ╠═942da32d-58f0-4057-88d8-b9077cc350e1
 # ╠═eab76a21-9f55-4a1e-b01f-fce9d441c1eb
@@ -2668,6 +2734,16 @@ for (var i=0; i < headers.length; i++) {
 # ╠═44817047-1ed9-40bd-83e8-e8a2f72963a3
 # ╠═bfd6313d-419d-4fdd-8a10-003ad6b2550c
 # ╠═3e4d8886-6c4d-4a13-8841-e73c71a6baaf
+# ╠═844d62ef-1533-456b-ab15-46b3aafcbc91
+# ╠═a104402f-27fb-4286-8108-e5e50e2fe49d
+# ╠═5409a4cd-8e86-4f64-b76d-42f3665ea7bf
+# ╠═54c013b4-6f96-4aa8-bd94-afed96b381b3
+# ╠═1f57f6bd-faaa-444c-9e72-8d05de70c9de
+# ╠═00d91925-4942-4d53-8a23-c4800c051ea1
+# ╠═50b9112c-a597-4e2b-86e0-70c6f2309a59
+# ╠═9224816f-b347-4aef-8d70-44a3800b636e
+# ╠═31116b95-3c7c-455e-8743-87b4b1988e62
+# ╠═1eb8d0cb-8beb-4fde-bff0-df6b56b93900
 # ╠═4efca3d3-d8f9-45f5-8eaf-c29b79cd6ab1
 # ╠═f85ee7b1-13df-42a3-a5f7-cc310552010a
 # ╠═d2b8948b-c923-4812-b729-50f535782013
