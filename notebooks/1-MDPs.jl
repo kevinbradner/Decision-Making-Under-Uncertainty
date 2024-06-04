@@ -146,7 +146,7 @@ A state $s$ in the Grid World problem is a discrete $(x,y)$ value in a $10\times
 """
 
 # ╔═╡ b83aceeb-4360-43ab-9396-ac57a9416791
-struct State
+struct State <: StaticArrays.FieldVector{2, Int}
 	x::Int
 	y::Int
 end
