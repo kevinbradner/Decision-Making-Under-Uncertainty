@@ -366,11 +366,22 @@ function policy_grid(policy::Policy, xmax::Int, ymax::Int)
     grid = Array{String}(undef, xmax, ymax)
     for x = 1:xmax, y = 1:xmax
         s = State(x, y)
-        grid[x,y] = arrows[action(policy, s)]
+		a = action(policy, s)
+		if a isa AbstractVector
+			a = a[1]
+		end
+		#Vector{
+		#println(a)
+		#println(typeof(a))
+		#println(typeof(RIGHT))
+        grid[x,y] = arrows[a]
     end
 
     return grid
 end
+
+# ╔═╡ 90662948-8659-4892-b5b8-53188be05a8f
+typeof(UL)
 
 # ╔═╡ d66edb3a-7ccc-4e75-8d42-8d5b1ff5afbb
 md"""
@@ -1496,6 +1507,9 @@ zero(Tuple{Int64})
 pi_dm = solve(dqn_dm, discrete_mdp)
   ╠═╡ =#
 
+# ╔═╡ 7621029b-0a9a-46ed-9da9-199a2b19ccd0
+typeof(RIGHT)
+
 # ╔═╡ 9224816f-b347-4aef-8d70-44a3800b636e
 
 
@@ -2021,12 +2035,12 @@ function plot_grid_world(mdp::MDP,
     (xmax, ymax) = params.size
     Uxy = reshape(U, xmax, ymax)
 
-	print(typeof(Uxy[1]))
+	#println(typeof(Uxy[1]))
 	if Uxy[1] isa Vector{Float32} #Matrix{Float64}
 		#findmax(values(mdp, pi_mdp)[49])[1]
 		Uxy = map(el -> findmax(el)[1], Uxy)
 	end
-	print(typeof(Uxy[1]))
+	#print(typeof(Uxy[1]))
 
 
     # plot values (i.e the U matrix)
@@ -2241,6 +2255,10 @@ value(pi_mdp, State(2, 2))
 
 # ╔═╡ 5409a4cd-8e86-4f64-b76d-42f3665ea7bf
 value(pi_mdp, State(2, 2))[2]
+
+# ╔═╡ 8dc5b52c-acf2-4251-8064-ef2e64ac53b4
+#arrows[action(policy, s)]
+typeof(action(pi_mdp, State(5, 3)))
 
 # ╔═╡ 1eb8d0cb-8beb-4fde-bff0-df6b56b93900
 typeof(pi_mdp)
@@ -2565,6 +2583,7 @@ for (var i=0; i < headers.length; i++) {
 # ╠═c1d07fca-1fbd-4450-96b1-c829d7ad8306
 # ╟─dcfc1975-04e8-4d8e-ab46-d1e0846c071e
 # ╠═bcc5e8a3-1e3a-40cf-a306-13599a4952ac
+# ╠═90662948-8659-4892-b5b8-53188be05a8f
 # ╟─d66edb3a-7ccc-4e75-8d42-8d5b1ff5afbb
 # ╠═bc541507-61db-4084-9712-1c57d139e17f
 # ╟─b2856919-5529-431b-8025-0b7f3f3081b0
@@ -2737,6 +2756,8 @@ for (var i=0; i < headers.length; i++) {
 # ╠═844d62ef-1533-456b-ab15-46b3aafcbc91
 # ╠═a104402f-27fb-4286-8108-e5e50e2fe49d
 # ╠═5409a4cd-8e86-4f64-b76d-42f3665ea7bf
+# ╠═8dc5b52c-acf2-4251-8064-ef2e64ac53b4
+# ╠═7621029b-0a9a-46ed-9da9-199a2b19ccd0
 # ╠═54c013b4-6f96-4aa8-bd94-afed96b381b3
 # ╠═1f57f6bd-faaa-444c-9e72-8d05de70c9de
 # ╠═00d91925-4942-4d53-8a23-c4800c051ea1
