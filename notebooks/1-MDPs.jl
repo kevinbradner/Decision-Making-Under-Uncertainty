@@ -536,7 +536,7 @@ function R(s, a=missing, s2=missing, useSOC=true)
 			return -Batt_SOH_drop
 		else
 			#print("s2 has no value! Proceeding based on intended action.")
-			print("useSOC is false!")
+			#print("useSOC is false!")
 			
 			intended_dx = MOVEMENTS[a].x
 			intended_dy = MOVEMENTS[a].y
@@ -549,6 +549,9 @@ function R(s, a=missing, s2=missing, useSOC=true)
 			intended_distance = sqrt(intended_dx * intended_dx + intended_dy * intended_dy)
 
 			time_taken = intended_distance / world_frame_velocity
+			if time_taken < 0
+				print("time taken < 0!")
+			end
 			return -1 * time_taken
 		end
 	end
@@ -1507,6 +1510,9 @@ zero(Tuple{Int64})
 pi_dm = solve(dqn_dm, discrete_mdp)
   ╠═╡ =#
 
+# ╔═╡ ed0577b6-e270-4f8c-87b1-417f52d3e8d3
+value(vi_policy, State(6, 7))
+
 # ╔═╡ 7621029b-0a9a-46ed-9da9-199a2b19ccd0
 typeof(RIGHT)
 
@@ -2125,6 +2131,9 @@ render(mdp, show_wind=true)
 # ╔═╡ e67994b8-d519-4c24-9d61-5cbef1629baa
 render(mdp; show_rewards=true)
 
+# ╔═╡ 6a313110-dc93-4d50-a54a-ebd1dcc06ff6
+mdp_soc = mdp
+
 # ╔═╡ ba95fdd5-d643-4de2-8235-90e2b5651410
 policy = solve(solver, mdp)
 
@@ -2186,16 +2195,21 @@ mdp
 S_mdp = state_space(mdp)
 
 # ╔═╡ abd3011d-a2c4-407b-9f8d-bf1b81c7c439
-A_mdp() = DiscreteNetwork(Chain(Dense(2, 32, relu), Dense(32, 8)), actions(mdp))
+#A_mdp() = DiscreteNetwork(Chain(Dense(2, 32, relu), Dense(32, 8)), actions(mdp))
+#A_mdp() = DiscreteNetwork(Chain(Dense(2, 28, relu), Dense(28, 49, relu), Dense(49, 8)), actions(mdp))
+A_mdp() = DiscreteNetwork(Chain(Dense(2, 28, hardtanh), Dense(28, 49, hardtanh), Dense(49, 8)), actions(mdp))
 
 # ╔═╡ ff85df53-b45c-4334-8722-4fd3b91c07f0
-dqn_mdp = DQN(π=A_mdp(), S=S_mdp, N=1000000)
+dqn_mdp = DQN(π=A_mdp(), S=S_mdp, N=100000)
 
 # ╔═╡ 3e4d8886-6c4d-4a13-8841-e73c71a6baaf
 plot_learning([dqn_mdp],
-	title="DQN Learning Curve",
+	title="DQN Learning Curve (SOC optimized MDP)",
 	labels=["DQN"],
 	legend=:right)
+
+# ╔═╡ 1003a354-545c-48e0-a0e4-04a18bc9d739
+directories(dqn_mdp)
 
 # ╔═╡ 4efca3d3-d8f9-45f5-8eaf-c29b79cd6ab1
 D = buffer_like(dqn_mdp.buffer, capacity=dqn_mdp.c_opt.batch_size, device=device(dqn_mdp.agent.π))
@@ -2241,6 +2255,15 @@ dqn_mdp.buffer
 # ╔═╡ e74d43c9-e6d9-4252-964a-743d92fcb75f
 dqn_mdp.agent.π
 
+# ╔═╡ 07b3a6e8-3424-4128-a212-4c93cc8fc2bf
+dqn_mdp_time = DQN(π=A_mdp(), S=S_mdp, N=100000) #no difference, just a different copy to solve on the time-objective MDP
+
+# ╔═╡ f001b2ea-54bf-41d2-aa93-a7b7d1a0d43b
+plot_learning([dqn_mdp_time],
+	title="DQN Learning Curve (Time optimized MDP)",
+	labels=["DQN"],
+	legend=:right)
+
 # ╔═╡ bd59750e-77dd-4f4c-95cc-062524c96a61
 actions(mdp)
 
@@ -2256,12 +2279,33 @@ value(pi_mdp, State(2, 2))
 # ╔═╡ 5409a4cd-8e86-4f64-b76d-42f3665ea7bf
 value(pi_mdp, State(2, 2))[2]
 
+# ╔═╡ 36e0c98d-853f-4c16-bb82-90da8491dcda
+value(pi_mdp, State(1, 7))
+
 # ╔═╡ 8dc5b52c-acf2-4251-8064-ef2e64ac53b4
 #arrows[action(policy, s)]
 typeof(action(pi_mdp, State(5, 3)))
 
+# ╔═╡ 4ccac89a-c7e9-4ff6-870e-95cef6ca8591
+for x in 1:7
+	for y in 1:7
+		dqn_action = action(pi_mdp, State(x, y))[1]
+		vi_action = action(vi_policy, State(x, y))
+		if dqn_action != vi_action
+			println("($x, $y): DQN action is $dqn_action, VI action is $vi_action")
+		end
+	end
+end
+
 # ╔═╡ 1eb8d0cb-8beb-4fde-bff0-df6b56b93900
 typeof(pi_mdp)
+
+# ╔═╡ f687e004-aab2-4af5-b975-8a335c508c60
+with_terminal() do
+	for (s,a,r) in stepthrough(mdp, pi_mdp, "s,a,r", max_steps=100)
+		@info "In state ($(s.x), $(s.y)), taking action $a, receiving reward $r"
+	end
+end		
 
 # ╔═╡ 1f57f6bd-faaa-444c-9e72-8d05de70c9de
 values(mdp, policy)
@@ -2348,6 +2392,20 @@ if show_simulation
     fig
 end
 
+# ╔═╡ 459fc6a3-9353-47f0-a6c2-a978285865eb
+mdp_time = QuickMDP(GridWorld, #MDP where minimizing completion time is the objective
+    states       = 𝒮,
+    actions      = 𝒜,
+    transition   = T,
+    reward       = (s, a=missing, s2=missing) -> R(s, a, s2, false),
+    discount     = γ,
+    initialstate = 𝒮,
+    isterminal   = termination,
+	render       = render);
+
+# ╔═╡ b28e76ff-50c9-432b-a360-f432b9a2e14b
+pi_mdp_time = solve(dqn_mdp_time, mdp_time)
+
 # ╔═╡ c5fbf696-3e5c-4b59-be4d-9a43f30d6211
 begin
 	println("a")
@@ -2424,7 +2482,10 @@ render(mdp, q_learning_policy, n_episodes_q, γ)
 render(mdp, sarsa_policy, n_episodes_sarsa, γ)
 
 # ╔═╡ 54c013b4-6f96-4aa8-bd94-afed96b381b3
-render(mdp, pi_mdp, 400000, γ; outline=true)
+render(mdp, pi_mdp, 100000, γ; outline=true)
+
+# ╔═╡ a590f77a-8a71-49c6-ac08-0c1c84106b81
+render(mdp, pi_mdp_time, 100000, γ; outline=true)
 
 # ╔═╡ caad8138-251b-4644-9217-3e3bba49e357
 render(mdp, policy; outline_state=steps[t].s, outline=false)
@@ -2608,6 +2669,8 @@ for (var i=0; i < headers.length; i++) {
 # ╟─7c2c2733-eb28-4d85-9074-99e64074e414
 # ╠═49b140ad-641f-436c-9492-cf3efbadd8d2
 # ╠═5af462ea-781b-4509-98de-c68c29ec81fd
+# ╠═6a313110-dc93-4d50-a54a-ebd1dcc06ff6
+# ╠═459fc6a3-9353-47f0-a6c2-a978285865eb
 # ╟─a3f76a77-bb6d-4a6b-8e5a-170dcc867c07
 # ╟─9f5dc78e-8183-4a03-9282-1aebf1af218c
 # ╠═142f0646-541e-453b-a3b1-4b8fadf709cc
@@ -2750,15 +2813,24 @@ for (var i=0; i < headers.length; i++) {
 # ╠═942da32d-58f0-4057-88d8-b9077cc350e1
 # ╠═eab76a21-9f55-4a1e-b01f-fce9d441c1eb
 # ╠═ff85df53-b45c-4334-8722-4fd3b91c07f0
+# ╠═07b3a6e8-3424-4128-a212-4c93cc8fc2bf
 # ╠═44817047-1ed9-40bd-83e8-e8a2f72963a3
 # ╠═bfd6313d-419d-4fdd-8a10-003ad6b2550c
+# ╠═b28e76ff-50c9-432b-a360-f432b9a2e14b
 # ╠═3e4d8886-6c4d-4a13-8841-e73c71a6baaf
+# ╠═f001b2ea-54bf-41d2-aa93-a7b7d1a0d43b
+# ╠═1003a354-545c-48e0-a0e4-04a18bc9d739
 # ╠═844d62ef-1533-456b-ab15-46b3aafcbc91
 # ╠═a104402f-27fb-4286-8108-e5e50e2fe49d
 # ╠═5409a4cd-8e86-4f64-b76d-42f3665ea7bf
+# ╠═36e0c98d-853f-4c16-bb82-90da8491dcda
+# ╠═ed0577b6-e270-4f8c-87b1-417f52d3e8d3
 # ╠═8dc5b52c-acf2-4251-8064-ef2e64ac53b4
 # ╠═7621029b-0a9a-46ed-9da9-199a2b19ccd0
 # ╠═54c013b4-6f96-4aa8-bd94-afed96b381b3
+# ╠═a590f77a-8a71-49c6-ac08-0c1c84106b81
+# ╠═4ccac89a-c7e9-4ff6-870e-95cef6ca8591
+# ╠═f687e004-aab2-4af5-b975-8a335c508c60
 # ╠═1f57f6bd-faaa-444c-9e72-8d05de70c9de
 # ╠═00d91925-4942-4d53-8a23-c4800c051ea1
 # ╠═50b9112c-a597-4e2b-86e0-70c6f2309a59
