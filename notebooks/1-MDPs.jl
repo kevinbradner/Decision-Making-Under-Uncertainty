@@ -463,9 +463,9 @@ end
 # ╔═╡ f7814a66-23c8-4782-ba06-755397af87db
 function R(s, a=missing, s2=missing, useSOC=true)
 	#R(s, a=missing, s2=missing, useSOC=true)
-	if s == State(4,3)
+	if s == State(3,4)
 		return -5
-	elseif s == State(4,6)
+	elseif s == State(5,5)
 		return -5
 	elseif s == State(7,1)
 		return 5
@@ -1516,6 +1516,16 @@ value(vi_policy, State(6, 7))
 # ╔═╡ 7621029b-0a9a-46ed-9da9-199a2b19ccd0
 typeof(RIGHT)
 
+# ╔═╡ f687e004-aab2-4af5-b975-8a335c508c60
+# ╠═╡ disabled = true
+#=╠═╡
+with_terminal() do
+	for (s,a,r) in stepthrough(mdp, pi_mdp, "s,a,r", max_steps=100)
+		@info "In state ($(s.x), $(s.y)), taking action $a, receiving reward $r"
+	end
+end		
+  ╠═╡ =#
+
 # ╔═╡ 9224816f-b347-4aef-8d70-44a3800b636e
 
 
@@ -2286,6 +2296,24 @@ value(pi_mdp, State(1, 7))
 #arrows[action(policy, s)]
 typeof(action(pi_mdp, State(5, 3)))
 
+# ╔═╡ ff39abfa-d0d1-4892-bc94-0491bbfb7d6f
+begin
+	println("Most likely SOC-optimized path:")
+	path_record_soc = [(1,2)]
+	for _ in 1:30
+		(x, y) = path_record_soc[end]
+		nextact = action(pi_mdp, State(x, y))[1]
+		mode_succ = mode(T(State(x,y), nextact))
+		println("from ($x, $y), moving $nextact most likely results in $mode_succ")
+		#println(mode(T(State(x,y), nextact)))
+		push!(path_record_soc, (mode_succ.x, mode_succ.y))
+		if mode_succ == State(7, 1)
+			break
+		end
+	end
+	print(path_record_soc)
+end
+
 # ╔═╡ 4ccac89a-c7e9-4ff6-870e-95cef6ca8591
 for x in 1:7
 	for y in 1:7
@@ -2299,13 +2327,6 @@ end
 
 # ╔═╡ 1eb8d0cb-8beb-4fde-bff0-df6b56b93900
 typeof(pi_mdp)
-
-# ╔═╡ f687e004-aab2-4af5-b975-8a335c508c60
-with_terminal() do
-	for (s,a,r) in stepthrough(mdp, pi_mdp, "s,a,r", max_steps=100)
-		@info "In state ($(s.x), $(s.y)), taking action $a, receiving reward $r"
-	end
-end		
 
 # ╔═╡ 1f57f6bd-faaa-444c-9e72-8d05de70c9de
 values(mdp, policy)
@@ -2405,6 +2426,24 @@ mdp_time = QuickMDP(GridWorld, #MDP where minimizing completion time is the obje
 
 # ╔═╡ b28e76ff-50c9-432b-a360-f432b9a2e14b
 pi_mdp_time = solve(dqn_mdp_time, mdp_time)
+
+# ╔═╡ fa153549-be92-452d-8391-6d3a21226d15
+begin
+	println("Most likely time-optimized path:")
+	path_record_time = [(1,2)]
+	for _ in 1:30
+		(x, y) = path_record_time[end]
+		nextact = action(pi_mdp_time, State(x, y))[1]
+		mode_succ = mode(T(State(x,y), nextact))
+		println("from ($x, $y), moving $nextact most likely results in $mode_succ")
+		#println(mode(T(State(x,y), nextact)))
+		push!(path_record_time, (mode_succ.x, mode_succ.y))
+		if mode_succ == State(7, 1)
+			break
+		end
+	end
+	print(path_record_time)
+end
 
 # ╔═╡ c5fbf696-3e5c-4b59-be4d-9a43f30d6211
 begin
@@ -2829,6 +2868,8 @@ for (var i=0; i < headers.length; i++) {
 # ╠═7621029b-0a9a-46ed-9da9-199a2b19ccd0
 # ╠═54c013b4-6f96-4aa8-bd94-afed96b381b3
 # ╠═a590f77a-8a71-49c6-ac08-0c1c84106b81
+# ╠═ff39abfa-d0d1-4892-bc94-0491bbfb7d6f
+# ╠═fa153549-be92-452d-8391-6d3a21226d15
 # ╠═4ccac89a-c7e9-4ff6-870e-95cef6ca8591
 # ╠═f687e004-aab2-4af5-b975-8a335c508c60
 # ╠═1f57f6bd-faaa-444c-9e72-8d05de70c9de
