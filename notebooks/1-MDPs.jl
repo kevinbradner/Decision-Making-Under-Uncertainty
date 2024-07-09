@@ -2521,10 +2521,10 @@ render(mdp, q_learning_policy, n_episodes_q, γ)
 render(mdp, sarsa_policy, n_episodes_sarsa, γ)
 
 # ╔═╡ 54c013b4-6f96-4aa8-bd94-afed96b381b3
-render(mdp, pi_mdp, 100000, γ; outline=true)
+render(mdp, pi_mdp, 100000, γ; outline=true, show_wind=true)
 
 # ╔═╡ a590f77a-8a71-49c6-ac08-0c1c84106b81
-render(mdp, pi_mdp_time, 100000, γ; outline=true)
+render(mdp, pi_mdp_time, 100000, γ; outline=true, show_wind=true)
 
 # ╔═╡ caad8138-251b-4644-9217-3e3bba49e357
 render(mdp, policy; outline_state=steps[t].s, outline=false)
