@@ -20,9 +20,6 @@ using Pkg
 # ╔═╡ 964ff5fa-444f-4095-9e2b-815dc4a68603
 pkg"add https://github.com/ancorso/Crux.jl"
 
-# ╔═╡ 004510b7-64d1-47ed-b348-7161af733c01
-Pkg.add("Debugger")
-
 # ╔═╡ 60ce9e30-6245-476b-be8d-838e29bc46f9
 Pkg.add("POMDPModels")
 
@@ -56,9 +53,6 @@ Pkg.add("Latexify")
 # ╔═╡ feacb0c5-595f-465d-b40d-e05b2bb6c516
 Pkg.add("PlutoUI")
 
-# ╔═╡ efd79e16-190d-40a6-9987-a16465d1c70d
-Pkg.add("FFMPEG")
-
 # ╔═╡ 52146c87-d7ab-4fae-b04e-e677d9235f53
 Pkg.add("cuDNN")
 
@@ -71,14 +65,8 @@ Pkg.add("MCTS")
 # ╔═╡ fbe10a2b-5217-4700-95ea-5ab666d62a3c
 Pkg.add("Reel")
 
-# ╔═╡ 629a2252-4d95-4d58-a004-96d491a26fcc
-Pkg.add("D3Trees")
-
 # ╔═╡ 73d38b5c-c823-47ec-b5a0-12e84760cee7
 Pkg.add("TabularTDLearning")
-
-# ╔═╡ 00f31771-a287-47b9-8adf-40c7d23bb7ea
-using Debugger
 
 # ╔═╡ 3c4e8e72-015c-4ad4-b2de-ed1bb1eacc37
 using POMDPModels
@@ -125,17 +113,11 @@ using Colors
 # ╔═╡ 891d93cc-50bd-404e-8b8f-543287d2efd9
 using Latexify
 
-# ╔═╡ c9811b7f-d076-42e7-9236-950a5f5051c3
-using FFMPEG
-
 # ╔═╡ 46311cba-fd3d-455b-a928-1add57fc2fd0
 using MCTS
 
 # ╔═╡ 7af3cb40-e49d-42c0-b87d-b898d1f27c1c
 using Reel
-
-# ╔═╡ 8d5e27eb-8da3-45e9-8c0d-bcf42fc33959
-using D3Trees
 
 # ╔═╡ 77388668-2419-410e-a384-f931fc375a5b
 using TabularTDLearning
@@ -157,9 +139,6 @@ begin
 	"""
 end
 
-# ╔═╡ 67faae61-5978-49b5-a1fa-5c0399c10312
-using POMDPGym
-
 # ╔═╡ 09770092-05c4-418b-b1ae-92b7fad1f6ad
 using Flux
 
@@ -169,10 +148,9 @@ using Crux
 # ╔═╡ 1f965ca7-8a36-4acf-a5d0-5e5b092ab6af
 using Crux: DiscreteNetwork, action_space, state_space, DQN, solve
 
-# ╔═╡ 6e6d983c-7cb3-4f85-ac0c-f1daf8ee3fee
-using POMDPSimulators
-
 # ╔═╡ db0265cd-ebe0-4bf2-9e70-c0f978b91ff6
+# ╠═╡ disabled = true
+#=╠═╡
 md"""
 ## Lecture Outline
 - Markov Decision Process (MDP) Definition
@@ -191,6 +169,7 @@ md"""
 - Simulations
     - Rollout Simulator Visualization
 """
+  ╠═╡ =#
 
 # ╔═╡ faf0ca6e-693d-4217-9e3c-e9e60339d416
 md"""
@@ -228,13 +207,61 @@ We refer to the _transition function_ and the _reward function_ as "_the model_"
 """
 
 # ╔═╡ 5e9b28a4-50b9-4c44-8d3c-48eb72bda3a5
+# ╠═╡ disabled = true
+#=╠═╡
 md"""
 ## Grid World Problem (MDP)
 In the _Grid World_ problem, an _agent_ moves around a grid attempting to collect as much reward as possible, trying to avoid negative rewards.
 """
+  ╠═╡ =#
+
+# ╔═╡ 004510b7-64d1-47ed-b348-7161af733c01
+# ╠═╡ disabled = true
+#=╠═╡
+Pkg.add("Debugger")
+  ╠═╡ =#
+
+# ╔═╡ 00f31771-a287-47b9-8adf-40c7d23bb7ea
+# ╠═╡ disabled = true
+#=╠═╡
+using Debugger
+  ╠═╡ =#
+
+# ╔═╡ efd79e16-190d-40a6-9987-a16465d1c70d
+# ╠═╡ disabled = true
+#=╠═╡
+Pkg.add("FFMPEG")
+  ╠═╡ =#
+
+# ╔═╡ c9811b7f-d076-42e7-9236-950a5f5051c3
+# ╠═╡ disabled = true
+#=╠═╡
+using FFMPEG
+  ╠═╡ =#
+
+# ╔═╡ 629a2252-4d95-4d58-a004-96d491a26fcc
+# ╠═╡ disabled = true
+#=╠═╡
+Pkg.add("D3Trees")
+  ╠═╡ =#
+
+# ╔═╡ 8d5e27eb-8da3-45e9-8c0d-bcf42fc33959
+# ╠═╡ disabled = true
+#=╠═╡
+using D3Trees
+  ╠═╡ =#
 
 # ╔═╡ 63b46029-c1c6-43b6-8782-30899b4af98c
+# ╠═╡ disabled = true
+#=╠═╡
 pyimport_conda("gym", "gym-all")
+  ╠═╡ =#
+
+# ╔═╡ 67faae61-5978-49b5-a1fa-5c0399c10312
+# ╠═╡ disabled = true
+#=╠═╡
+using POMDPGym
+  ╠═╡ =#
 
 # ╔═╡ e2a84ebf-a259-43c1-b512-f6c6b6e02d14
 md"""
@@ -243,6 +270,9 @@ First we set some parameters that help us define the Grid World environment (the
 
 These parameters defines the _size_ of the grid, a _null state_ for convenience, and the probability of transitioning to the chosen cell $p_\text{transition}$.
 """
+
+# ╔═╡ b901d23a-e8ee-4b76-a9e2-fecfd15e91b3
+
 
 # ╔═╡ 31ae33aa-5f25-4cd8-8e63-8e77c2233208
 md"""
@@ -281,7 +311,7 @@ Base.:(==)(s1::State, s2::State) = (s1.x == s2.x) && (s1.y == s2.y)
 	size::Tuple{Int,Int} = (7, 7)   # size of the grid
 	null_state::State = State(-1, -1) # terminal state outside of the grid
 	p_transition::Real = 0.7 # probability of transitioning to the correct next state
-	wind_dict::Dict{State, Tuple{Int, Float64}} = Dict(
+	base_wind_dict::Dict{State, Tuple{Int, Float64}} = Dict(
 		State(-1, -1) => (0,0),#needed for Crux?
 		State(1,7) => (5,0),      
 		State(2,7) => (5,7*pi/4),
@@ -333,6 +363,7 @@ Base.:(==)(s1::State, s2::State) = (s1.x == s2.x) && (s1.y == s2.y)
 		State(6,1) => (5,3*pi/4),
 		State(7,1) => (15,3*pi/2)
 	)
+	wind_dict::Dict{State, Tuple{Int, Float64}} = Dict(k => (0.2*v[1], v[2]) for (k, v) in base_wind_dict)
 end	
 
 # ╔═╡ 13dbf845-14a7-4c98-a1db-b3a83c9ce37c
@@ -434,6 +465,12 @@ md"""
 The dynamics to transition the agent live in the transition function $T(s^\prime \mid s, a)$. The transition function returns a **distribution** over next states $s^\prime$ given the current state $s$ and an action $a$.
 """
 
+# ╔═╡ 3712fb82-4aa4-41bf-a7a4-b61dfbf0c67d
+# ╠═╡ disabled = true
+#=╠═╡
+T(State(2,2), RIGHT)
+  ╠═╡ =#
+
 # ╔═╡ 148d8e67-33a4-4065-911e-9ee0c33d8822
 md"We define a boundry helper function to ensure the agent stays within the grid."
 
@@ -533,7 +570,7 @@ function R(s, a=missing, s2=missing, useSOC=true)
            		ang_diff=abs(local_wind_angle-7*pi/4)
            		Batt_SOH_drop= dist_mult * SOC_drop_empirical(ang_diff)
 			end
-			return -Batt_SOH_drop
+			return -local_wind_mag * Batt_SOH_drop
 		else
 			#print("s2 has no value! Proceeding based on intended action.")
 			#print("useSOC is false!")
@@ -646,9 +683,6 @@ function T(s::State, a::Action, debug=missing)
 
 	return SparseCat(next_states, probabilities)
 end
-
-# ╔═╡ 3712fb82-4aa4-41bf-a7a4-b61dfbf0c67d
-T(State(2,2), RIGHT)
 
 # ╔═╡ 54d7926d-f8d0-4e95-9b29-5b3ce330ea04
 params.wind_dict[State(2,3)]
@@ -784,12 +818,15 @@ solver = ValueIterationSolver(max_iterations=30, verbose=true);
   ╠═╡ =#
 
 # ╔═╡ 12501ad4-b42d-4fc4-b54b-30f4b929c0ab
+# ╠═╡ disabled = true
+#=╠═╡
 md"""
 #### Policy
 We set the discount factor to the variable $\gamma$ which is bound to a slider, and solve the MDP to obtain a policy $\pi$ mapping states $s$ to actions $a$.
 
 $$\pi(s) = a$$
 """
+  ╠═╡ =#
 
 # ╔═╡ 90b507bd-8cab-4c30-816e-a4b264e903a6
 md"### Example: _Transition Probability and State-Value_
@@ -872,6 +909,18 @@ md"""
 The arrows in each cell (i.e. state) show the policy, and the color represents the discounted utility $U(s)$ (where green is positive utility and red is negative utility).
 """
 
+# ╔═╡ 1ae17bb4-35db-48fa-8b32-b8d669025160
+# ╠═╡ disabled = true
+#=╠═╡
+action(vi_policy, State(5,1))
+  ╠═╡ =#
+
+# ╔═╡ b5834c6a-687b-4b74-869c-6f01fa066fdb
+# ╠═╡ disabled = true
+#=╠═╡
+value(vi_policy, State(5,1))
+  ╠═╡ =#
+
 # ╔═╡ b9100f1b-4903-4edc-a371-2f4b0eb20298
 T(State(5,1), RIGHT, true)
 
@@ -903,12 +952,6 @@ vi_mdp = QuickMDP(GridWorld,
 # ╔═╡ 1540a649-b238-498e-a8fb-5a29461194b5
 vi_policy = solve(vi_solver, vi_mdp);
 
-# ╔═╡ 1ae17bb4-35db-48fa-8b32-b8d669025160
-action(vi_policy, State(5,1))
-
-# ╔═╡ b5834c6a-687b-4b74-869c-6f01fa066fdb
-value(vi_policy, State(5,1))
-
 # ╔═╡ 6d024b5b-faa3-4075-babd-c6b260cef55e
 one_based_policy!(vi_policy); # handles the case when iterations = 0
 
@@ -924,6 +967,18 @@ md"""
 
 # ╔═╡ 38af3571-9b0a-4b19-b33a-573101b597a0
 md"Create value iteration GIF? $(@bind create_gif CheckBox())"
+
+# ╔═╡ dfa19121-b929-467a-a4ab-3f6563f200cf
+# ╠═╡ disabled = true
+#=╠═╡
+create_gif ? create_value_iteration_gif() : LocalResource("./gifs/gridworld_vi.gif")
+  ╠═╡ =#
+
+# ╔═╡ b0a444df-0b41-430b-924f-83075944368a
+# ╠═╡ disabled = true
+#=╠═╡
+create_gif ? create_discount_gif() : LocalResource("./gifs/gridworld_vi_γ.gif")
+  ╠═╡ =#
 
 # ╔═╡ a2b7e745-8b15-42c6-89ca-e97aef1c9a0f
 md"""
@@ -1128,6 +1183,8 @@ $$
 @bind γ_q Slider(0:0.05:1, default=0.95, show_value=true)
 
 # ╔═╡ 9d1994d2-7ea9-4828-98fc-27bf5d17bab9
+# ╠═╡ disabled = true
+#=╠═╡
 q_mdp = QuickMDP(GridWorld,
     states       = 𝒮,
     actions      = 𝒜,
@@ -1136,30 +1193,47 @@ q_mdp = QuickMDP(GridWorld,
     discount     = γ_q, # custom discount for visualization of Q-learning policy
     initialstate = 𝒮,
     isterminal   = termination);
+  ╠═╡ =#
 
 # ╔═╡ acbaca80-cafb-49c3-adea-4fd507c2c142
 md"""
 #### Q-learning Solver
 """
 
+# ╔═╡ 61e6ad96-ff2a-4dd9-9698-48c33bd43f26
+# ╠═╡ disabled = true
+#=╠═╡
+q_learning_solver = QLearningSolver(n_episodes=n_episodes_q,
+                                    learning_rate=0.8,
+                                    exploration_policy=EpsGreedyPolicy(q_mdp, 0.5),
+	                                verbose=false);
+  ╠═╡ =#
+
 # ╔═╡ 2db772d9-16a1-4bdb-9205-611a1921831f
 md"""
 #### Q-learning Policy
 """
 
-# ╔═╡ 9cf0f694-d4a3-48fd-9cb0-1c8ac0361d5c
-@bind n_episodes_q Slider(1:500, default=500)
-
-# ╔═╡ 61e6ad96-ff2a-4dd9-9698-48c33bd43f26
-q_learning_solver = QLearningSolver(n_episodes=n_episodes_q,
-                                    learning_rate=0.8,
-                                    exploration_policy=EpsGreedyPolicy(q_mdp, 0.5),
-	                                verbose=false);
-
 # ╔═╡ ee7c1fe5-2991-4b2a-981b-1c72106d5855
+# ╠═╡ disabled = true
+#=╠═╡
 q_learning_policy = solve(q_learning_solver, q_mdp);
+  ╠═╡ =#
+
+# ╔═╡ ee5ae9e6-b837-4521-bac7-cf069765d278
+#=╠═╡
+render(mdp, q_learning_policy, n_episodes_q, γ)
+  ╠═╡ =#
+
+# ╔═╡ 9cf0f694-d4a3-48fd-9cb0-1c8ac0361d5c
+# ╠═╡ disabled = true
+#=╠═╡
+@bind n_episodes_q Slider(1:500, default=500)
+  ╠═╡ =#
 
 # ╔═╡ bf23cf92-103f-4181-b9e6-97efe0249d0a
+# ╠═╡ disabled = true
+#=╠═╡
 md"""
 ### SARSA
 The $\rm S{\small ARSA}$ algorithm$^4$ is a modification of $Q$-learning that uses $(s, a, r, s^\prime, a^\prime)$. It uses the actual next action $a^\prime$ to update the $Q$-values **instead** of maximizing over all actions.
@@ -1173,11 +1247,17 @@ $$
 \rm new\ value \leftarrow \rm old\ value &+\ \\ \rm learning\ rate \ \cdot &\biggl(\rm reward\ + discount \cdot \bigl(next\ value\bigr) - \rm old\ value \biggr)
 \end{align}$$
 """
+  ╠═╡ =#
 
 # ╔═╡ 1c1c765e-3a36-42f2-b1cb-8683b265ecad
+# ╠═╡ disabled = true
+#=╠═╡
 @bind γ_sarsa Slider(0:0.05:1, default=0.95, show_value=true)
+  ╠═╡ =#
 
 # ╔═╡ 3bcf0923-8ac2-4f82-97ca-d0996658a046
+# ╠═╡ disabled = true
+#=╠═╡
 sarsa_mdp = QuickMDP(GridWorld,
     states       = 𝒮,
     actions      = 𝒜,
@@ -1186,33 +1266,51 @@ sarsa_mdp = QuickMDP(GridWorld,
     discount     = γ_sarsa, # custom discount for visualization of SARSA policy
     initialstate = 𝒮,
     isterminal   = termination);
+  ╠═╡ =#
 
 # ╔═╡ e8620cb9-21de-4e5d-805a-0571eeceef7d
 md"""
 #### SARSA Solver
 """
 
+# ╔═╡ f73f735c-6e8a-4ad4-b404-9772ce557eb1
+# ╠═╡ disabled = true
+#=╠═╡
+sarsa_solver = SARSASolver(n_episodes=n_episodes_sarsa,
+                           learning_rate=0.8,
+                           exploration_policy=EpsGreedyPolicy(sarsa_mdp, 0.5),
+	                       verbose=false);
+  ╠═╡ =#
+
 # ╔═╡ c0929ea6-4b20-4e34-bec3-f0fc5935e406
 md"""
 #### SARSA Policy
 """
 
-# ╔═╡ 5bfbceb4-7006-47c0-a965-13500caef00d
-@bind n_episodes_sarsa Slider(0:10:1000, default=500)
-
-# ╔═╡ f73f735c-6e8a-4ad4-b404-9772ce557eb1
-sarsa_solver = SARSASolver(n_episodes=n_episodes_sarsa,
-                           learning_rate=0.8,
-                           exploration_policy=EpsGreedyPolicy(sarsa_mdp, 0.5),
-	                       verbose=false);
-
 # ╔═╡ 133eaaec-7113-4ec6-bac0-555f6efa1cb3
+# ╠═╡ disabled = true
+#=╠═╡
 sarsa_policy = solve(sarsa_solver, sarsa_mdp);
+  ╠═╡ =#
+
+# ╔═╡ fb0a10c6-ca0b-480c-93d6-09aac5cc96ed
+#=╠═╡
+render(mdp, sarsa_policy, n_episodes_sarsa, γ)
+  ╠═╡ =#
+
+# ╔═╡ 5bfbceb4-7006-47c0-a965-13500caef00d
+# ╠═╡ disabled = true
+#=╠═╡
+@bind n_episodes_sarsa Slider(0:10:1000, default=500)
+  ╠═╡ =#
 
 # ╔═╡ cabde5e8-a783-4c93-af0f-d9e0eee264ce
+# ╠═╡ disabled = true
+#=╠═╡
 md"""
 ### Deep Q-Learning
 """
+  ╠═╡ =#
 
 # ╔═╡ b0d01d02-8d4e-41b4-9e0b-9c453f76aed2
 function Q_network()
@@ -1833,9 +1931,14 @@ html"""
 """
 
 # ╔═╡ 548124bb-0229-40f3-ba57-e436f37612ec
+# ╠═╡ disabled = true
+#=╠═╡
 @bind γ_mcts Slider(0:0.05:1, default=0.95, show_value=true)
+  ╠═╡ =#
 
 # ╔═╡ 60644fcd-dec8-4e0e-bbee-2e29443e61c8
+# ╠═╡ disabled = true
+#=╠═╡
 mcts_mdp = QuickMDP(GridWorld,
     states       = 𝒮,
     actions      = 𝒜,
@@ -1844,33 +1947,44 @@ mcts_mdp = QuickMDP(GridWorld,
     discount     = γ_mcts, # custom discount for visualization of MCTS policy
     initialstate = 𝒮,
     isterminal   = termination);
+  ╠═╡ =#
 
 # ╔═╡ 7af62c0f-2154-4e0a-86bb-17dd3a84f362
 md"First we create the MCTS solver with appropriate input parameters."
 
 # ╔═╡ d69bb3f3-f805-40f8-8f19-6210246ff86c
+# ╠═╡ disabled = true
+#=╠═╡
 mcts_solver = MCTSSolver(n_iterations=50,
 	                     depth=20,
 	                     exploration_constant=5.0,
                          enable_tree_vis=true);
+  ╠═╡ =#
 
 # ╔═╡ 6467f4c6-a59f-4601-8b8e-5627e3386d0e
 md"Then we solve the MDP to create a planner (again, we use \"planner\" instead of \"policy\" to indicate that the planner is executed online)."
 
 # ╔═╡ e5143473-6471-43e4-ac20-2907968f35d3
+#=╠═╡
 mcts_planner = solve(mcts_solver, mcts_mdp);
+  ╠═╡ =#
 
 # ╔═╡ 6b9b6f24-f4d4-435a-856a-469e5a20f602
 md"We can sample a random initial state $s_0$, or pick a starting state."
 
 # ╔═╡ 756cf1c4-ddfb-4173-8287-5eac419093ff
+# ╠═╡ disabled = true
+#=╠═╡
 s₀ = State(4,2) # rand(initialstate(mcts_mdp))
+  ╠═╡ =#
 
 # ╔═╡ 6befa3ba-35e8-4b03-a28b-b30ceb9a66d3
 md"Similar to the `action` function which returns an action, MCTS also has an `action_info` function which—as the name suggests—returns the action and some information. We want to retrieve the `tree` from the `info` object."
 
 # ╔═╡ 54e28d34-af2f-49df-95f4-d95ab9f6b3ea
+#=╠═╡
 aₘ, info = action_info(mcts_planner, s₀);
+  ╠═╡ =#
 
 # ╔═╡ d156dbbd-a63d-48a8-8c15-664df10416f5
 md"""
@@ -1882,13 +1996,17 @@ To visualize the online search tree, we can use `D3Trees.jl`.
 md"We can control the labels for the state nodes—here we show the $(x,y)$ state and the reward."
 
 # ╔═╡ 76d59916-c550-4d6e-b5c9-8989d67ad871
+#=╠═╡
 MCTS.node_tag(s::State) = "($(s.x), $(s.y))\nr = $(reward(mcts_mdp, s))"
+  ╠═╡ =#
 
 # ╔═╡ dc03ec16-f319-4a98-a2ea-66ea5489151c
 md"Click to expand the levels of the search tree. The root note is the initial state, and the layers alternate between states and actions."
 
 # ╔═╡ 2af5a9a9-a612-44a6-8be0-1d6cc43fc200
+#=╠═╡
 tree = D3Tree(info[:tree], s₀, init_expand=1)
+  ╠═╡ =#
 
 # ╔═╡ 6af23b44-528a-4027-9ba9-e1e91781d83b
 md"""
@@ -1896,6 +2014,12 @@ md"""
 
 Say we want to simulate many different episodes of the policies we created. `POMDPSimulators` provides this functionality.
 """
+
+# ╔═╡ 6e6d983c-7cb3-4f85-ac0c-f1daf8ee3fee
+# ╠═╡ disabled = true
+#=╠═╡
+using POMDPSimulators
+  ╠═╡ =#
 
 # ╔═╡ d613b978-98fa-44aa-ad1d-c51e50e2d12a
 md"""
@@ -1977,7 +2101,10 @@ md"""
 md"Create GIF of single simulated episode? $(@bind create_episode_gif CheckBox())"
 
 # ╔═╡ 4f13867a-a91e-4251-8d43-746baa6d12a6
+# ╠═╡ disabled = true
+#=╠═╡
 isfile("gifs/gridworld_episode.gif") && LocalResource("./gifs/gridworld_episode.gif")
+  ╠═╡ =#
 
 # ╔═╡ a0178751-85c0-4424-bfd0-4df86434855b
 md"""
@@ -2008,6 +2135,55 @@ Now we'll run $N_\text{sim}$ number of simulations—each representing a single 
 md"""
 Run large simulation: $(@bind show_simulation CheckBox())
 """
+
+# ╔═╡ 7124f670-d5ba-4e9b-86cf-48f2be0bc2a2
+#=╠═╡
+if show_simulation
+	using Statistics
+	mean_std(X) = (μ=mean(X), σ=std(X), r=X)
+	N_sim = 10_000
+
+	stats_vi = mean_std([simulate(rollsim, mdp, policy) for _ in 1:N_sim])
+	stats_ql = mean_std([simulate(rollsim, mdp, q_learning_policy) for _ in 1:N_sim])
+	stats_sarsa = mean_std([simulate(rollsim, mdp, sarsa_policy) for _ in 1:N_sim])
+
+	results = (value_iteration=stats_vi, q_learning=stats_ql, sarsa=stats_sarsa)
+end
+  ╠═╡ =#
+
+# ╔═╡ 92bb38e3-00e2-4d5b-a511-4f0580777aa5
+#=╠═╡
+if show_simulation
+    using RollingFunctions
+    using LaTeXStrings
+    window = 500
+    
+    rolling_mean_vi = rolling(mean, results.value_iteration.r, window)
+    rolling_mean_ql = rolling(mean, results.q_learning.r, window)
+    rolling_mean_sarsa = rolling(mean, results.sarsa.r, window)
+    rolling_error_vi = log.(rolling(std, results.value_iteration.r, window)/3)
+    rolling_error_ql = log.(rolling(std, results.q_learning.r, window)/3)
+    rolling_error_sarsa = log.(rolling(std, results.sarsa.r, window)/3)
+    num_simulations = rolling(minimum, 1:N_sim, window)
+
+    fig = plot(num_simulations, rolling_mean_vi,
+		ribbon=rolling_error_vi, fillalpha=0.2,
+        color="blue", label="Value iteration", legend=(0.8, 0.65))
+    plot!(num_simulations, rolling_mean_ql,
+		ribbon=rolling_error_ql, fillalpha=0.2,
+        color="red", label="Q-learning")
+    plot!(num_simulations, rolling_mean_sarsa,
+		ribbon=rolling_error_sarsa, fillalpha=0.2,
+        color="black", label="SARSA")
+
+    xlabel!("number of simulations")
+    ylabel!("mean reward")
+    title!("Rolling Mean")
+    xticks!(0:2000:N_sim, latexstring.(0:2000:N_sim))
+    yticks!(1:6, latexstring.(1:6))
+    fig
+end
+  ╠═╡ =#
 
 # ╔═╡ a4e1b417-60c9-475e-aa16-b2112f7b47cf
 md"
@@ -2368,51 +2544,6 @@ md"Simulation time step: $(@bind t Slider(1:length(steps), default=1))"
 # ╔═╡ 87c715e7-29aa-4111-a0d1-1c5049341142
 simulate(rollsim, mdp, policy)
 
-# ╔═╡ 7124f670-d5ba-4e9b-86cf-48f2be0bc2a2
-if show_simulation
-	using Statistics
-	mean_std(X) = (μ=mean(X), σ=std(X), r=X)
-	N_sim = 10_000
-
-	stats_vi = mean_std([simulate(rollsim, mdp, policy) for _ in 1:N_sim])
-	stats_ql = mean_std([simulate(rollsim, mdp, q_learning_policy) for _ in 1:N_sim])
-	stats_sarsa = mean_std([simulate(rollsim, mdp, sarsa_policy) for _ in 1:N_sim])
-
-	results = (value_iteration=stats_vi, q_learning=stats_ql, sarsa=stats_sarsa)
-end
-
-# ╔═╡ 92bb38e3-00e2-4d5b-a511-4f0580777aa5
-if show_simulation
-    using RollingFunctions
-    using LaTeXStrings
-    window = 500
-    
-    rolling_mean_vi = rolling(mean, results.value_iteration.r, window)
-    rolling_mean_ql = rolling(mean, results.q_learning.r, window)
-    rolling_mean_sarsa = rolling(mean, results.sarsa.r, window)
-    rolling_error_vi = log.(rolling(std, results.value_iteration.r, window)/3)
-    rolling_error_ql = log.(rolling(std, results.q_learning.r, window)/3)
-    rolling_error_sarsa = log.(rolling(std, results.sarsa.r, window)/3)
-    num_simulations = rolling(minimum, 1:N_sim, window)
-
-    fig = plot(num_simulations, rolling_mean_vi,
-		ribbon=rolling_error_vi, fillalpha=0.2,
-        color="blue", label="Value iteration", legend=(0.8, 0.65))
-    plot!(num_simulations, rolling_mean_ql,
-		ribbon=rolling_error_ql, fillalpha=0.2,
-        color="red", label="Q-learning")
-    plot!(num_simulations, rolling_mean_sarsa,
-		ribbon=rolling_error_sarsa, fillalpha=0.2,
-        color="black", label="SARSA")
-
-    xlabel!("number of simulations")
-    ylabel!("mean reward")
-    title!("Rolling Mean")
-    xticks!(0:2000:N_sim, latexstring.(0:2000:N_sim))
-    yticks!(1:6, latexstring.(1:6))
-    fig
-end
-
 # ╔═╡ 459fc6a3-9353-47f0-a6c2-a978285865eb
 mdp_time = QuickMDP(GridWorld, #MDP where minimizing completion time is the objective
     states       = 𝒮,
@@ -2480,9 +2611,6 @@ function create_value_iteration_gif()
 	LocalResource("./gifs/gridworld_vi.gif")
 end
 
-# ╔═╡ dfa19121-b929-467a-a4ab-3f6563f200cf
-create_gif ? create_value_iteration_gif() : LocalResource("./gifs/gridworld_vi.gif")
-
 # ╔═╡ ea27b654-d225-4708-bf3f-fab306f51c72
 function create_discount_gif()
 	frames_γ = Frames(MIME("image/png"), fps=2)
@@ -2510,15 +2638,6 @@ function create_discount_gif()
 	write("gifs/gridworld_vi_γ.gif", frames_γ)
 	LocalResource("./gifs/gridworld_vi_γ.gif")
 end
-
-# ╔═╡ b0a444df-0b41-430b-924f-83075944368a
-create_gif ? create_discount_gif() : LocalResource("./gifs/gridworld_vi_γ.gif")
-
-# ╔═╡ ee5ae9e6-b837-4521-bac7-cf069765d278
-render(mdp, q_learning_policy, n_episodes_q, γ)
-
-# ╔═╡ fb0a10c6-ca0b-480c-93d6-09aac5cc96ed
-render(mdp, sarsa_policy, n_episodes_sarsa, γ)
 
 # ╔═╡ 54c013b4-6f96-4aa8-bd94-afed96b381b3
 render(mdp, pi_mdp, 100000, γ; outline=true, show_wind=true)
@@ -2671,6 +2790,7 @@ for (var i=0; i < headers.length; i++) {
 # ╠═52b96024-9f52-4f07-926b-2297ed7dd166
 # ╠═d9755f26-3f30-48ba-91d7-266c0204237d
 # ╟─e2a84ebf-a259-43c1-b512-f6c6b6e02d14
+# ╠═b901d23a-e8ee-4b76-a9e2-fecfd15e91b3
 # ╠═c092511d-c2e7-4b8c-8104-b4b10893cb02
 # ╠═13dbf845-14a7-4c98-a1db-b3a83c9ce37c
 # ╠═8d683391-75eb-4f5d-8849-7dd77720b5bf
