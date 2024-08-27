@@ -355,9 +355,9 @@ end
 # ╔═╡ f7814a66-23c8-4782-ba06-755397af87db
 function R(s, a=missing, s2=missing, useSOC=true)
 	#R(s, a=missing, s2=missing, useSOC=true)
-	if s == State(3,4)
+	if s == State(2,3)
 		return -5
-	elseif s == State(5,5)
+	elseif s == State(5,6)
 		return -5
 	elseif s == State(7,1)
 		return 5
@@ -425,7 +425,7 @@ function R(s, a=missing, s2=missing, useSOC=true)
            		ang_diff=abs(local_wind_angle-7*pi/4)
            		Batt_SOH_drop= dist_mult * SOC_drop_empirical(ang_diff)
 			end
-			return Batt_SOH_drop
+			return -Batt_SOH_drop
 		else
 			#print("s2 has no value! Proceeding based on intended action.")
 			print("useSOC is false!")
